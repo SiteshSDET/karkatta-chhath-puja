@@ -355,6 +355,7 @@ function applyEventYear() {
 
 function openEditor() {
   loginPurpose = "register";
+  loginForm.dataset.purpose = "register";
   const signedIn = authSession && authSession.expires_at > Date.now() / 1000;
   loginForm.hidden = Boolean(signedIn);
   editorContent.hidden = !signedIn;
@@ -387,6 +388,7 @@ loginForm.addEventListener("submit", async (event) => {
   loginStatus.textContent = "Signing in…";
   loginStatus.classList.remove("is-error");
   try {
+    loginPurpose = loginForm.dataset.purpose || "register";
     const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method: "POST",
       headers: {
@@ -419,6 +421,7 @@ loginForm.addEventListener("submit", async (event) => {
       dropZone.hidden = false;
       loginStatus.textContent = "";
       editorDialog.close();
+      loginForm.dataset.purpose = "register";
       mediaStatus.textContent = "Admin verified. Select Choose files again to pick media; previews are local to this device.";
       return;
     } else {
@@ -430,6 +433,7 @@ loginForm.addEventListener("submit", async (event) => {
     }
     prepareEditor();
     loginForm.reset();
+    loginForm.dataset.purpose = "register";
   } catch (error) {
     loginStatus.textContent = error.message || "Unable to sign in.";
     loginStatus.classList.add("is-error");
@@ -547,6 +551,7 @@ closeEditorButton.addEventListener("click", () => editorDialog.close());
 closeLoginButton.addEventListener("click", () => editorDialog.close());
 editorDialog.addEventListener("close", () => {
   memberClicks = 0;
+  loginForm.dataset.purpose = "register";
   loginForm.reset();
 });
 
@@ -570,6 +575,7 @@ document.querySelector("#choose-media").addEventListener("click", () => {
     loginForm.hidden = false;
     editorContent.hidden = true;
     loginStatus.textContent = "";
+    loginForm.dataset.purpose = "media";
     editorDialog.showModal();
     return;
   }

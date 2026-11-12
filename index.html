@@ -65,8 +65,8 @@
           </div>
           <span class="section-aside">Photos &amp; videos</span>
         </div>
-        <div id="drop-zone" class="upload-zone" hidden>
-          <input id="media-input" class="visually-hidden" type="file" accept="image/*,video/*" multiple>
+        <div id="drop-zone" class="upload-zone">
+          <input id="media-input" class="visually-hidden" type="file" accept="image/*,video/*" multiple disabled>
           <span class="upload-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14.5v3A2.5 2.5 0 0 0 7.5 20h9a2.5 2.5 0 0 0 2.5-2.5v-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </span>
@@ -75,7 +75,7 @@
             <span>Choose photos or videos, or drag them here</span>
           </div>
           <button id="choose-media" class="button button-outline" type="button">Choose files</button>
-          <p id="media-status" class="upload-note" role="status" aria-live="polite">Local previews only; your files are not uploaded to a server.</p>
+          <p id="media-status" class="upload-note" role="status" aria-live="polite">Photo and video selection requires an authorized admin sign-in. Previews are local to this device.</p>
         </div>
         <div id="media-grid" class="media-grid" aria-live="polite"></div>
       </section>
