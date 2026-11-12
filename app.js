@@ -89,6 +89,8 @@ let memberClicks = 0;
 let mediaClicks = 0;
 let editingMembers = [];
 let authSession = null;
+let loginPurpose = "register";
+let mediaAuthorized = false;
 
 function isValidYear(value) {
   return Number.isInteger(value) && value >= 1 && value <= 9999;
@@ -153,7 +155,11 @@ async function getApiResult(response) {
     }
   }
   if (!response.ok) {
-    throw new Error(result.message || result.msg || result.error_description || `Supabase request failed (${response.status}).`);
+    const message = result.message || result.msg || result.error_description;
+    if (message?.toLowerCase().includes("invalid api key")) {
+      throw new Error("Supabase rejected the configured publishable key. Copy the Publishable key from Settings → API Keys in the same project as the configured Supabase URL, then replace SUPABASE_PUBLISHABLE_KEY in app.js.");
+    }
+    throw new Error(message || `Supabase request failed (${response.status}).`);
   }
   return result;
 }
@@ -348,6 +354,7 @@ function applyEventYear() {
 }
 
 function openEditor() {
+  loginPurpose = "register";
   const signedIn = authSession && authSession.expires_at > Date.now() / 1000;
   loginForm.hidden = Boolean(signedIn);
   editorContent.hidden = !signedIn;
@@ -392,7 +399,13 @@ loginForm.addEventListener("submit", async (event) => {
       }),
     });
     const result = await response.json();
-    if (!response.ok) throw new Error(result.msg || result.message || "Sign-in failed.");
+    if (!response.ok) {
+      const message = result.msg || result.message || "Sign-in failed.";
+      if (message.toLowerCase().includes("invalid api key")) {
+        throw new Error("Supabase rejected the configured publishable key. Copy the Publishable key from Settings → API Keys in the same project as the configured Supabase URL, then replace SUPABASE_PUBLISHABLE_KEY in app.js.");
+      }
+      throw new Error(message);
+    }
     if (result.user?.app_metadata?.register_admin !== true) {
       throw new Error("This account is not authorized to edit the shared register.");
     }
@@ -400,10 +413,20 @@ loginForm.addEventListener("submit", async (event) => {
       access_token: result.access_token,
       expires_at: result.expires_at || Math.floor(Date.now() / 1000) + result.expires_in,
     };
-    const loaded = await loadSharedRegister();
-    if (!loaded) {
-      authSession = null;
-      throw new Error("Could not load the shared register. Check Supabase setup and try again.");
+    if (loginPurpose === "media") {
+      mediaAuthorized = true;
+      mediaInput.disabled = false;
+      dropZone.hidden = false;
+      loginStatus.textContent = "";
+      editorDialog.close();
+      mediaStatus.textContent = "Admin verified. Select Choose files again to pick media; previews are local to this device.";
+      return;
+    } else {
+      const loaded = await loadSharedRegister();
+      if (!loaded) {
+        authSession = null;
+        throw new Error("Could not load the shared register. Check the Supabase API key and table setup, then try again.");
+      }
     }
     prepareEditor();
     loginForm.reset();
@@ -538,11 +561,17 @@ const maxFileSize = 30 * 1024 * 1024;
 mediaInput.disabled = true;
 
 document.querySelector("#choose-media").addEventListener("click", () => {
-  if (mediaClicks < 9) {
-    mediaClicks += 1;
+  if (!mediaAuthorized || !authSession || authSession.expires_at <= Date.now() / 1000) {
+    mediaAuthorized = false;
+    mediaInput.disabled = true;
+    mediaClicks = Math.min(mediaClicks + 1, 9);
     if (mediaClicks < 9) return;
-    dropZone.hidden = false;
-    mediaInput.disabled = false;
+    loginPurpose = "media";
+    loginForm.hidden = false;
+    editorContent.hidden = true;
+    loginStatus.textContent = "";
+    editorDialog.showModal();
+    return;
   }
   mediaInput.click();
 });
@@ -552,7 +581,7 @@ mediaInput.addEventListener("change", () => {
 });
 
 function addMediaFiles(files) {
-  if (mediaClicks < 9) return;
+  if (!mediaAuthorized || !authSession || authSession.expires_at <= Date.now() / 1000) return;
   let added = 0;
   for (const file of files) {
     if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
@@ -602,16 +631,16 @@ function addMediaFiles(files) {
 
 for (const eventName of ["dragenter", "dragover"]) {
   dropZone.addEventListener(eventName, (event) => {
-  event.preventDefault();
-  if (mediaClicks < 9) return;
+    event.preventDefault();
+    if (!mediaAuthorized || !authSession || authSession.expires_at <= Date.now() / 1000) return;
     dropZone.classList.add("is-dragging");
   });
 }
 
 for (const eventName of ["dragleave", "drop"]) {
   dropZone.addEventListener(eventName, (event) => {
-  event.preventDefault();
-  if (mediaClicks < 9) return;
+    event.preventDefault();
+    if (!mediaAuthorized || !authSession || authSession.expires_at <= Date.now() / 1000) return;
     dropZone.classList.remove("is-dragging");
     if (eventName === "drop") addMediaFiles(event.dataTransfer.files);
   });
