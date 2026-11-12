@@ -1,6 +1,6 @@
 const STORAGE_KEY = "chhath-puja-2026-members";
 const SUPABASE_URL = "https://kwnhoberdxqtzujwhudn.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Yw-MlfJ873N7yAJwYZcSYQ_OzVrPg5H";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_inl3Ssd5YZ65qjRwk7hx4Q_uQD1EIFx";
 const SHARED_REGISTER_ID = "chhath-puja-2026";
 const ORIGINAL_MEMBERS = [
   ["Sudheep", 501, true, 501],
