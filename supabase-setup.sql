@@ -14,7 +14,8 @@ alter table public.shared_register
   add column if not exists hero_description text not null default E'Together in devotion. Together in gratitude.\nCelebrating the beauty of Chhath in Karkatta.',
   add column if not exists hero_caption text not null default 'ARAGHYA · GRATITUDE · TOGETHERNESS',
   add column if not exists hero_image_path text,
-  add column if not exists gallery_media jsonb not null default '[]'::jsonb;
+  add column if not exists gallery_media jsonb not null default '[]'::jsonb,
+  add column if not exists finance_expenses jsonb not null default '[]'::jsonb;
 
 insert into storage.buckets (id, name, public, file_size_limit)
 values ('karkatta-community', 'karkatta-community', true, null)

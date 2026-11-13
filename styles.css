@@ -21,6 +21,8 @@ html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
+  width: 100%;
+  overflow-x: clip;
   background: var(--paper);
   color: var(--ink);
   font-size: 15px;
@@ -249,12 +251,46 @@ button { color: inherit; }
 .member-table tfoot td:nth-last-child(2) { color: var(--maroon); }
 .register-footnote { margin: 12px 0 0; color: #8b867d; font-size: 10px; }
 
+.accounts-section {
+  width: min(1120px, calc(100% - 64px));
+  margin-top: 32px;
+  padding: 34px;
+  border: 1px solid #d5e8df;
+  border-radius: 24px;
+  background: linear-gradient(140deg, #eff9f3, #fff 58%, #f0f7fb);
+  box-shadow: 0 16px 38px #315d4a0d;
+}
+.accounts-heading { align-items: flex-start; }
+.accounts-year-control { width: 110px; display: grid; gap: 5px; padding: 10px; border: 1px solid #cfe2d7; border-radius: 12px; background: #ffffffc9; color: #386652; font-size: 9px; font-weight: 800; }
+.accounts-year-control .settings-input { height: 36px; border-color: #cfe2d7; border-radius: 8px; color: #285d46; font-size: 13px; font-weight: 700; }
+.accounts-actions { max-width: 430px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.accounts-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 23px 0 17px; }
+.account-card { position: relative; min-width: 0; min-height: 116px; display: grid; align-content: start; gap: 6px; padding: 17px; overflow: hidden; border: 1px solid #dce8df; border-top: 3px solid #378466; border-radius: 15px; background: linear-gradient(145deg, #fff, #eff9f3); box-shadow: 0 8px 20px #244b3a0c; }
+.account-card::after { position: absolute; right: -17px; bottom: -27px; width: 76px; height: 76px; border: 11px solid #ffffff80; border-radius: 50%; content: ""; pointer-events: none; }
+.account-card > span, .account-card > strong, .account-card > small { position: relative; z-index: 1; }
+.account-card > span { color: #5e7268; font-size: 11px; font-weight: 700; }
+.account-card > strong { color: #285d46; font-family: "Playfair Display", Georgia, serif; font-size: 25px; line-height: 1.25; overflow-wrap: anywhere; }
+.account-card > small { color: #85938b; font-size: 9px; }
+.account-expenses { border-color: #f0ddc4; border-top-color: #d18432; background: linear-gradient(145deg, #fff, #fff7eb); }
+.account-expenses > strong { color: #a15b24; }
+.account-balance { border-color: #d9e1ef; border-top-color: #687fac; background: linear-gradient(145deg, #fff, #f3f5fc); }
+.account-balance > strong { color: #4a5e88; }
+.account-balance > strong.is-negative { color: #b13630; }
+.accounts-details-toggle { min-height: 42px; border-color: #bcd7c7; background: #fff; color: #28664d; }
+.accounts-details-toggle:hover { border-color: #6ea589; background: #f2faf5; }
+.accounts-details { margin-top: 14px; padding: 12px; border: 1px solid #dce8df; border-radius: 14px; background: #ffffffbf; }
+.accounts-table thead th { background: #e7f2eb; color: #386652; }
+.accounts-table tfoot th, .accounts-table tfoot td { background: #e7f2eb; }
+.accounts-empty { margin: 12px 0 0; color: var(--muted); font-size: 11px; text-align: center; }
+
 .member-editor {
-  width: min(1100px, calc(100% - 32px));
+  width: min(1220px, calc(100vw - 32px));
   max-width: none;
-  max-height: min(88vh, 900px);
+  max-height: min(92vh, 960px);
+  max-height: min(92dvh, 960px);
   padding: 24px;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   border: 1px solid #e5d4b8;
   border-radius: 12px;
   background: var(--paper);
@@ -265,7 +301,8 @@ button { color: inherit; }
 dialog.member-editor[open].is-manager {
   display: flex;
   flex-direction: column;
-  height: min(88vh, 900px);
+  height: min(92vh, 960px);
+  height: min(92dvh, 960px);
   overflow: hidden;
 }
 dialog.member-editor[open].is-manager #editor-content {
@@ -285,6 +322,10 @@ dialog.member-editor[open].is-manager .manager-panel:not([hidden]) {
   scrollbar-gutter: stable;
 }
 dialog.member-editor[open].is-manager .editor-table-scroll {
+  max-height: none;
+  overflow: visible;
+}
+dialog.member-editor[open].is-manager .expense-table-scroll {
   max-height: none;
   overflow: visible;
 }
@@ -467,6 +508,23 @@ dialog.member-editor[open].is-manager .editor-table-scroll {
 .manager-panel[data-manager-panel="member-photos"] .manager-panel-heading h3 { color: #28664d; }
 .manager-panel[data-manager-panel="media"] .manager-panel-heading h3 { color: #5c4387; }
 .manager-panel[data-manager-panel="media"] .gallery-manager-controls { padding: 14px; border: 1px solid #e4dcef; border-radius: 13px; background: #ffffffb8; }
+.manager-register-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 18px 0; }
+.manager-register-summary .summary-card { min-width: 0; min-height: 94px; border-radius: 13px; }
+.expense-entry-form { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(110px, .8fr) minmax(145px, 1fr) minmax(100px, .65fr) auto; align-items: end; gap: 10px; margin: 17px 0; padding: 15px; border: 1px solid #eadfd2; border-radius: 13px; background: #fffaf3; }
+.expense-entry-form label { min-width: 0; display: grid; gap: 6px; color: var(--muted); font-size: 10px; font-weight: 700; }
+.expense-entry-form .settings-input { min-width: 0; border-radius: 8px; }
+.expense-table-scroll { max-height: 46vh; }
+.expense-table { table-layout: fixed; }
+.expense-table thead th:nth-child(1) { width: 16%; }
+.expense-table thead th:nth-child(2) { width: 42%; }
+.expense-table thead th:nth-child(3) { width: 22%; }
+.expense-table thead th:nth-child(4) { width: 48px; }
+.expense-input { width: 100%; min-width: 0; height: 34px; padding: 0 7px; border: 1px solid #e8dfd3; border-radius: 7px; background: #fff; color: var(--ink); font-size: 11px; }
+.expense-input:focus { border-color: #c99458; outline: 2px solid #c9945822; }
+.expense-input.expense-amount, .expense-input.expense-year { text-align: right; }
+.expense-actions { justify-content: flex-end; margin-top: 12px; }
+.manager-section-save { justify-self: start; margin-top: 12px; }
+.member-photo-tools #save-member-photos { justify-self: start; }
 
 :focus-visible { outline: 3px solid #d89545; outline-offset: 3px; }
 
@@ -498,6 +556,7 @@ dialog.member-editor[open].is-manager .editor-table-scroll {
   .gallery-section { padding-top: 48px; }
   .public-register { margin-top: 23px; padding: 20px 14px 19px; border-radius: 19px; }
   .gallery-section { margin-top: 23px; padding: 20px 14px; border-radius: 19px; }
+  .accounts-section { width: calc(100% - 36px); margin: 23px auto 0; padding: 20px 14px; border-radius: 19px; }
   .section-heading { gap: 12px; }
   .section-heading > div:first-child { width: 100%; min-width: 0; padding: 13px 14px; border-radius: 13px; }
   .section-heading h2 { font-size: 25px; }
@@ -514,6 +573,23 @@ dialog.member-editor[open].is-manager .editor-table-scroll {
   .gallery-card-copy { padding: 13px 14px 15px; }
   .gallery-card h3 { font-size: 18px; }
   .gallery-manager-controls { grid-template-columns: 1fr; gap: 9px; }
+  .accounts-heading { align-items: stretch; }
+  .accounts-heading > div:first-child { width: 100%; }
+  .accounts-year-control { width: 100%; grid-template-columns: auto minmax(100px, 1fr); align-items: center; }
+  .accounts-actions { max-width: none; display: grid; grid-template-columns: 1fr; }
+  .accounts-actions .button { width: 100%; }
+  .accounts-summary { grid-template-columns: 1fr; gap: 9px; margin: 14px 0; }
+  .account-card { min-height: 90px; padding: 13px 15px; border-radius: 12px; }
+  .account-card > strong { font-size: 22px; }
+  .accounts-details { padding: 8px; }
+  .accounts-table { display: block; width: 100%; }
+  .accounts-table thead { display: none; }
+  .accounts-table tbody { display: grid; gap: 8px; }
+  .accounts-table tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 10px; padding: 11px; border: 1px solid #dce8df; border-radius: 11px; background: #fff; }
+  .accounts-table tbody td { height: auto; min-width: 0; padding: 0; display: grid; gap: 3px; border: 0; text-align: left !important; overflow-wrap: anywhere; }
+  .accounts-table tbody td::before { content: attr(data-label); color: var(--muted); font-size: 9px; font-weight: 600; }
+  .accounts-table tbody td:nth-child(2) { grid-column: 1 / -1; font-weight: 700; }
+  .accounts-table tfoot { display: none; }
   .public-register .register-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0; }
   .public-register .summary-card { min-width: 0; min-height: 87px; padding: 11px; border-radius: 12px; }
   .public-register .summary-card strong { font-size: 18px; }
@@ -550,6 +626,7 @@ dialog.member-editor[open].is-manager .editor-table-scroll {
   .admin-login .editor-actions .button { min-height: 44px; }
   .manager-heading { align-items: flex-start; }
   .manager-panel { padding: 13px; border-radius: 13px; }
+  .manager-panel:not([hidden]) { width: 100%; max-width: 100%; }
   .manager-panel-heading { padding: 11px; }
   .manager-heading h2 { font-size: 22px; }
   .manager-heading-actions { gap: 5px; }
@@ -558,6 +635,22 @@ dialog.member-editor[open].is-manager .editor-table-scroll {
   .manager-tab { flex: 0 0 auto; min-width: 90px; padding: 10px 7px; font-size: 10px; white-space: nowrap; }
   .manager-panel-heading { align-items: flex-start; }
   .manager-panel-heading h3 { font-size: 18px; }
+  .manager-register-summary { grid-template-columns: 1fr; gap: 7px; }
+  .manager-register-summary .summary-card { min-height: 78px; }
+  .expense-entry-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; padding: 11px; }
+  .expense-entry-form label:first-child { grid-column: 1 / -1; }
+  .expense-entry-form .button { grid-column: 1 / -1; width: 100%; }
+  .expense-table-scroll { max-height: none; overflow: visible; border: 0; box-shadow: none !important; }
+  .expense-table { display: block; width: 100%; }
+  .expense-table thead { display: none; }
+  .expense-table tbody { display: grid; gap: 9px; }
+  .expense-table tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 9px; padding: 10px; border: 1px solid #eadfd2; border-left: 3px solid #a95036; border-radius: 11px; background: #fff; }
+  .expense-table tbody td { height: auto; min-width: 0; padding: 0; display: grid; gap: 4px; border: 0; text-align: left !important; }
+  .expense-table tbody td::before { content: attr(data-label); color: var(--muted); font-size: 9px; }
+  .expense-table tbody td:nth-child(2) { grid-column: 1 / -1; }
+  .expense-table .expense-input { min-width: 0; height: 38px; font-size: 12px; }
+  .expense-table .expense-remove-cell { display: flex; justify-content: flex-end; }
+  .expense-table .expense-remove-cell::before { display: none; }
   .register-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin: 13px 0; }
   .summary-card { min-height: 86px; padding: 11px; }
   .summary-card strong { font-size: 19px; }
@@ -603,6 +696,7 @@ dialog.member-editor[open].is-manager .editor-table-scroll {
   .main-nav { gap: 3px; padding: 3px; }
   .main-nav a, .members-trigger { min-height: 31px; padding: 0 7px; font-size: 10px; }
   .gallery-year-control { width: 101px; flex-basis: 101px; }
+  .accounts-summary { grid-template-columns: 1fr; }
 }
 
 @media print {

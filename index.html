@@ -108,6 +108,43 @@ Celebrating the beauty of Chhath in Karkatta.</p>
         <p class="register-footnote">The previous year's balance is shown separately.</p>
       </section>
 
+      <section id="accounts-section" class="content-section accounts-section" aria-labelledby="accounts-title">
+        <div class="section-heading accounts-heading">
+          <div>
+            <span class="section-kicker">COMMUNITY HISAB</span>
+            <h2 id="accounts-title">Collection &amp; expenditure <span id="accounts-year">2026</span></h2>
+            <p class="section-description">Collections are calculated from member contributions received.</p>
+          </div>
+          <label class="accounts-year-control">Year
+            <select id="accounts-year-filter" class="settings-input" aria-label="Show hisab by year"></select>
+          </label>
+          <div class="accounts-actions">
+            <button id="accounts-refresh" class="button button-outline" type="button">Refresh data</button>
+            <button id="accounts-view-pdf" class="button button-primary" type="button">View / Print PDF</button>
+            <button id="accounts-download-pdf" class="button button-outline" type="button">Download PDF</button>
+          </div>
+        </div>
+        <p id="accounts-status" class="pdf-status" role="status" aria-live="polite"></p>
+        <div class="accounts-summary" aria-label="Community accounting totals">
+          <article class="account-card account-collection"><span>Total collected</span><strong id="account-collected">₹0</strong><small>received in the member register</small></article>
+          <article class="account-card account-expenses"><span>Total expenditure</span><strong id="account-expenditure">₹0</strong><small>recorded expenses</small></article>
+          <article class="account-card account-balance"><span>Balance</span><strong id="account-balance">₹0</strong><small>collection minus expenditure</small></article>
+        </div>
+        <button id="accounts-details-toggle" class="button button-outline accounts-details-toggle" type="button" aria-expanded="false" aria-controls="accounts-details">
+          View expenditure details
+        </button>
+        <div id="accounts-details" class="accounts-details" hidden>
+          <div class="table-scroll">
+            <table class="member-table accounts-table">
+              <thead><tr><th scope="col">Date</th><th scope="col">Expenditure on</th><th scope="col">Amount (₹)</th></tr></thead>
+              <tbody id="public-expense-rows"></tbody>
+              <tfoot><tr><th scope="row" colspan="2">Total expenditure</th><td id="public-expense-total">₹0</td></tr></tfoot>
+            </table>
+          </div>
+          <p id="public-expense-empty" class="accounts-empty" hidden>No expenditure has been recorded yet.</p>
+        </div>
+      </section>
+
       <section id="gallery" class="content-section gallery-section" aria-labelledby="gallery-title">
         <div class="section-heading">
           <div>
@@ -169,6 +206,7 @@ Celebrating the beauty of Chhath in Karkatta.</p>
           <button class="manager-tab" type="button" data-manager-tab="settings" aria-selected="false">Site details</button>
           <button class="manager-tab" type="button" data-manager-tab="member-photos" aria-selected="false">Member photos</button>
           <button class="manager-tab" type="button" data-manager-tab="media" aria-selected="false">Gallery by year</button>
+          <button class="manager-tab" type="button" data-manager-tab="accounts" aria-selected="false">Hisab</button>
         </nav>
         <section class="manager-panel" data-manager-panel="register" aria-labelledby="register-panel-title">
           <div class="manager-panel-heading">
@@ -244,6 +282,7 @@ Celebrating the beauty of Chhath in Karkatta.</p>
             <input id="member-photo-input" class="visually-hidden" type="file" accept="image/*" disabled>
             <button id="choose-member-photo" class="button button-outline" type="button" disabled>Add member photo</button>
             <p id="member-photo-status" class="editor-status" role="status" aria-live="polite">Member photos are saved and shared with everyone.</p>
+            <button id="save-member-photos" class="button button-primary" type="button">Save member photos</button>
           </div>
           <div id="manager-member-photo-list" class="manager-member-photo-list"></div>
         </section>
@@ -274,6 +313,42 @@ Celebrating the beauty of Chhath in Karkatta.</p>
             <textarea id="media-caption-input" class="settings-input settings-textarea" maxlength="160" rows="2" placeholder="Write a short caption to show with the uploaded media"></textarea>
           </label>
           <div id="manager-media-grid" class="media-grid" aria-live="polite"></div>
+          <button id="save-gallery-media" class="button button-primary manager-section-save" type="button">Save gallery</button>
+        </section>
+        <section class="manager-panel" data-manager-panel="accounts" aria-labelledby="accounts-panel-title" hidden>
+          <div class="manager-panel-heading">
+            <div><h3 id="accounts-panel-title">Manage community hisab</h3><p>Total collection is calculated from the member register’s received amounts. Add and save each expenditure below.</p></div>
+          </div>
+          <div class="manager-register-summary">
+            <article class="summary-card summary-card-accent"><span>Collected from members</span><strong id="manager-account-collected">₹0</strong><small>current register received total</small></article>
+            <article class="summary-card"><span>Expenditure</span><strong id="manager-account-expenditure">₹0</strong><small id="manager-account-year-label">in 2026</small></article>
+            <article class="summary-card"><span>Balance</span><strong id="manager-account-balance">₹0</strong><small>collection minus expenditure</small></article>
+          </div>
+          <div class="expense-entry-form">
+            <label>Expenditure on
+              <input id="expense-part" class="settings-input" type="text" maxlength="120" placeholder="For example, Puja materials" required>
+            </label>
+            <label>Amount (₹)
+              <input id="expense-amount" class="settings-input" type="number" min="0.01" step="0.01" inputmode="decimal" required>
+            </label>
+            <label>Date
+              <input id="expense-date" class="settings-input" type="date" required>
+            </label>
+            <label>Year
+              <input id="expense-year" class="settings-input" type="number" min="2026" max="9999" step="1" value="2026" required>
+            </label>
+            <button id="add-expense" class="button button-outline" type="button">Add expenditure</button>
+          </div>
+          <div class="table-scroll expense-table-scroll">
+            <table class="member-table expense-table">
+              <thead><tr><th scope="col">Date</th><th scope="col">Expenditure on</th><th scope="col">Amount (₹)</th><th scope="col"><span class="visually-hidden">Remove</span></th></tr></thead>
+              <tbody id="expense-rows"></tbody>
+            </table>
+          </div>
+          <div class="manager-actions expense-actions">
+            <button id="save-expenses" class="button button-primary" type="button">Save expenditures</button>
+          </div>
+          <p id="expense-status" class="editor-status" role="status" aria-live="polite">Expenditure changes are not saved until you select Save expenditures.</p>
         </section>
       </div>
     </dialog>

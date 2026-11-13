@@ -102,6 +102,15 @@ const memberPhotoInput = document.querySelector("#member-photo-input");
 const chooseMemberPhotoButton = document.querySelector("#choose-member-photo");
 const memberPhotoStatus = document.querySelector("#member-photo-status");
 const mediaCaptionInput = document.querySelector("#media-caption-input");
+const expensePartInput = document.querySelector("#expense-part");
+const expenseAmountInput = document.querySelector("#expense-amount");
+const expenseDateInput = document.querySelector("#expense-date");
+const expenseYearInput = document.querySelector("#expense-year");
+const expenseRows = document.querySelector("#expense-rows");
+const expenseStatus = document.querySelector("#expense-status");
+const saveExpensesButton = document.querySelector("#save-expenses");
+const accountsYearFilter = document.querySelector("#accounts-year-filter");
+const accountsStatus = document.querySelector("#accounts-status");
 const managerSignoutButton = document.querySelector("#manager-signout");
 const numberFormat = new Intl.NumberFormat("en-IN");
 const BASE_YEAR = 2026;
@@ -114,11 +123,14 @@ let heroDescription = loadedRegister.heroDescription;
 let heroCaption = loadedRegister.heroCaption;
 let heroImagePath = loadedRegister.heroImagePath;
 let galleryMedia = loadedRegister.galleryMedia;
+let financeExpenses = loadedRegister.financeExpenses;
+let editingExpenses = [];
 let editingMembers = [];
 let authSession = null;
 let mediaAuthorized = false;
 let supportsSharedEventTitle = true;
 let supportsSharedSiteSettings = true;
+let supportsSharedFinance = true;
 let sharedLoadSequence = 0;
 
 function isValidYear(value) {
@@ -156,6 +168,21 @@ function validGalleryMedia(value) {
   );
 }
 
+function validFinanceExpenses(value) {
+  return Array.isArray(value) && value.every((expense) =>
+    expense &&
+    typeof expense.id === "string" &&
+    typeof expense.part === "string" &&
+    expense.part.trim().length > 0 &&
+    Number.isFinite(expense.amount) &&
+    expense.amount > 0 &&
+    typeof expense.date === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/.test(expense.date) &&
+    isValidYear(expense.year) &&
+    expense.year >= BASE_YEAR
+  );
+}
+
 function loadRegister() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -169,6 +196,7 @@ function loadRegister() {
         heroCaption: DEFAULT_HERO_CAPTION,
         heroImagePath: null,
         galleryMedia: [],
+        financeExpenses: [],
       };
     }
     const parsed = JSON.parse(saved);
@@ -183,6 +211,7 @@ function loadRegister() {
         heroCaption: DEFAULT_HERO_CAPTION,
         heroImagePath: null,
         galleryMedia: [],
+        financeExpenses: [],
       };
     }
     if (!parsed || !isValidMembers(parsed.members) || !isValidYear(parsed.year)) {
@@ -196,6 +225,7 @@ function loadRegister() {
       heroCaption: typeof parsed.heroCaption === "string" ? parsed.heroCaption : DEFAULT_HERO_CAPTION,
       heroImagePath: typeof parsed.heroImagePath === "string" ? parsed.heroImagePath : null,
       galleryMedia: validGalleryMedia(parsed.galleryMedia) ? parsed.galleryMedia : [],
+      financeExpenses: validFinanceExpenses(parsed.financeExpenses) ? parsed.financeExpenses : [],
     };
   } catch (error) {
     setSaveStatus("Could not load saved edits; showing the original register.", true);
@@ -208,6 +238,7 @@ function loadRegister() {
       heroCaption: DEFAULT_HERO_CAPTION,
       heroImagePath: null,
       galleryMedia: [],
+      financeExpenses: [],
     };
   }
 }
@@ -230,6 +261,7 @@ function saveLocalRegister(value, year, title) {
       heroCaption,
       heroImagePath,
       galleryMedia,
+      financeExpenses,
     }));
     return true;
   } catch (error) {
@@ -362,14 +394,14 @@ async function deleteStorageFile(path) {
   await getApiResult(response);
 }
 
-async function loadSharedRegister(useLegacySchema = false, requestId = null, statusTarget = null) {
+async function loadSharedRegister(useLegacySchema = false, requestId = null, statusTarget = null, includeFinance = true) {
   if (requestId === null) requestId = ++sharedLoadSequence;
   const legacyOnly = useLegacySchema === "legacy";
   const select = legacyOnly
     ? "members,event_year"
     : useLegacySchema
       ? "members,event_year,event_title"
-      : "members,event_year,event_title,hero_eyebrow,hero_description,hero_caption,hero_image_path,gallery_media";
+      : `members,event_year,event_title,hero_eyebrow,hero_description,hero_caption,hero_image_path,gallery_media${includeFinance ? ",finance_expenses" : ""}`;
   try {
     const response = await fetch(
       `${SUPABASE_URL}/rest/v1/shared_register?id=eq.${encodeURIComponent(SHARED_REGISTER_ID)}&select=${select}`,
@@ -406,7 +438,8 @@ async function loadSharedRegister(useLegacySchema = false, requestId = null, sta
       typeof register.hero_description !== "string" ||
       typeof register.hero_caption !== "string" ||
       (register.hero_image_path !== null && typeof register.hero_image_path !== "string") ||
-      !validGalleryMedia(register.gallery_media)
+      !validGalleryMedia(register.gallery_media) ||
+      (includeFinance && !validFinanceExpenses(register.finance_expenses))
     )) {
       throw new Error("The shared site settings are invalid. Run the updated Supabase setup SQL.");
     }
@@ -420,11 +453,15 @@ async function loadSharedRegister(useLegacySchema = false, requestId = null, sta
     heroCaption = useLegacySchema ? DEFAULT_HERO_CAPTION : register.hero_caption;
     heroImagePath = useLegacySchema ? null : register.hero_image_path;
     galleryMedia = useLegacySchema ? [] : register.gallery_media;
+    financeExpenses = useLegacySchema || !includeFinance ? [] : register.finance_expenses;
+    supportsSharedFinance = !useLegacySchema && !legacyOnly && includeFinance;
     saveLocalRegister(members, eventYear, eventTitle);
     applyEventSettings();
     renderPublicRegister();
     populateMemberPhotoSelect();
     renderGalleryMedia();
+    renderAccounts();
+    renderManagerExpenses();
     if (!editorDialog.open) renderEditor();
     setSaveStatus("Shared register loaded");
     if (statusTarget) {
@@ -434,6 +471,10 @@ async function loadSharedRegister(useLegacySchema = false, requestId = null, sta
     return true;
   } catch (error) {
     if (requestId !== sharedLoadSequence) return false;
+    if (!useLegacySchema && !legacyOnly && includeFinance && /finance_expenses/i.test(error.message || "")) {
+      supportsSharedFinance = false;
+      return loadSharedRegister(false, requestId, statusTarget, false);
+    }
     if (!useLegacySchema && !legacyOnly && /hero_eyebrow|hero_description|hero_caption|hero_image_path|gallery_media/i.test(error.message || "")) {
       supportsSharedSiteSettings = false;
       return loadSharedRegister(true, requestId, statusTarget);
@@ -469,6 +510,7 @@ managerRefreshButton.addEventListener("click", async () => {
     return;
   }
   const hasUnsavedChanges = editorStatus.textContent.includes("Unsaved changes") ||
+    JSON.stringify(editingExpenses) !== JSON.stringify(financeExpenses) ||
     eventTitleInput.value.trim() !== eventTitle ||
     Number(eventYearInput.value) !== eventYear ||
     heroEyebrowInput.value !== heroEyebrow ||
@@ -496,7 +538,9 @@ async function saveSharedRegister(
   title,
   includeTitle = supportsSharedEventTitle,
   includeSiteSettings = supportsSharedSiteSettings,
-  requireSiteSettings = false
+  requireSiteSettings = false,
+  includeFinance = supportsSharedFinance,
+  requireFinance = false
 ) {
   if (!authSession || authSession.expires_at <= Date.now() / 1000) {
     authSession = null;
@@ -526,6 +570,7 @@ async function saveSharedRegister(
         hero_image_path: heroImagePath,
         gallery_media: galleryMedia,
       } : {}),
+      ...(includeFinance ? { finance_expenses: financeExpenses } : {}),
     }),
   });
   try {
@@ -536,14 +581,21 @@ async function saveSharedRegister(
       if (title !== eventTitle) {
         throw new Error("Run the updated supabase-setup.sql to enable shared title editing.");
       }
-      return saveSharedRegister(value, year, title, false, includeSiteSettings, requireSiteSettings);
+      return saveSharedRegister(value, year, title, false, includeSiteSettings, requireSiteSettings, includeFinance, requireFinance);
+    }
+    if (includeFinance && /finance_expenses/i.test(error.message || "")) {
+      supportsSharedFinance = false;
+      if (requireFinance) {
+        throw new Error("Run the updated supabase-setup.sql to enable shared community accounting.");
+      }
+      return saveSharedRegister(value, year, title, includeTitle, includeSiteSettings, requireSiteSettings, false, false);
     }
     if (includeSiteSettings && /hero_eyebrow|hero_description|hero_caption|hero_image_path|gallery_media/i.test(error.message || "")) {
       supportsSharedSiteSettings = false;
       if (requireSiteSettings) {
         throw new Error("Run the updated supabase-setup.sql to enable shared banner and gallery management.");
       }
-      return saveSharedRegister(value, year, title, includeTitle, false, false);
+      return saveSharedRegister(value, year, title, includeTitle, false, false, includeFinance, requireFinance);
     }
     throw error;
   }
@@ -680,7 +732,69 @@ function renderPublicRegister(data = members, year = eventYear, title = eventTit
   document.querySelector("#public-table-pledged").textContent = `₹${numberFormat.format(pledged)}`;
   document.querySelector("#public-table-received").textContent = `₹${numberFormat.format(received)}`;
   renderMemberCards(data);
+  renderAccounts();
 }
+
+function getReceivedTotal(data = members) {
+  return data.reduce((total, member) => total + member.received, 0);
+}
+
+function renderAccounts() {
+  const years = [...new Set([eventYear, ...financeExpenses.map((expense) => expense.year)])]
+    .sort((left, right) => right - left);
+  const selectedYear = Number(accountsYearFilter.value) || eventYear;
+  accountsYearFilter.replaceChildren(...years.map((year) => new Option(String(year), String(year))));
+  accountsYearFilter.value = years.includes(selectedYear) ? String(selectedYear) : String(eventYear);
+  const year = Number(accountsYearFilter.value);
+  const selectedExpenses = financeExpenses.filter((expense) => expense.year === year);
+  const expenditure = selectedExpenses.reduce((total, expense) => total + expense.amount, 0);
+  const hasRegisterCollection = year === eventYear;
+  const collected = hasRegisterCollection ? getReceivedTotal() : null;
+  const balance = collected === null ? null : collected - expenditure;
+  document.querySelector("#accounts-year").textContent = String(year);
+  document.querySelector("#account-collected").textContent = collected === null ? "—" : `₹${numberFormat.format(collected)}`;
+  document.querySelector("#account-expenditure").textContent = `₹${numberFormat.format(expenditure)}`;
+  document.querySelector("#account-balance").textContent = balance === null ? "—" : `₹${numberFormat.format(balance)}`;
+  document.querySelector("#account-balance").classList.toggle("is-negative", balance !== null && balance < 0);
+  document.querySelector("#public-expense-total").textContent = `₹${numberFormat.format(expenditure)}`;
+  const fragment = document.createDocumentFragment();
+  [...selectedExpenses].sort((left, right) => right.date.localeCompare(left.date)).forEach((expense) => {
+    const row = document.createElement("tr");
+    const dateCell = document.createElement("td");
+    dateCell.dataset.label = "Date";
+    dateCell.textContent = new Date(`${expense.date}T00:00:00`).toLocaleDateString();
+    const partCell = document.createElement("td");
+    partCell.dataset.label = "Expenditure on";
+    partCell.textContent = expense.part;
+    const amountCell = document.createElement("td");
+    amountCell.dataset.label = "Amount (₹)";
+    amountCell.textContent = numberFormat.format(expense.amount);
+    row.append(dateCell, partCell, amountCell);
+    fragment.append(row);
+  });
+  document.querySelector("#public-expense-rows").replaceChildren(fragment);
+  document.querySelector("#public-expense-empty").hidden = selectedExpenses.length > 0;
+  document.querySelector("#accounts-section .section-description").textContent = hasRegisterCollection
+    ? "Collections are calculated from member contributions received."
+    : `Member collections are available for the current ${eventYear} register only.`;
+  if (!supportsSharedFinance) {
+    accountsStatus.textContent = "Shared expenditure data needs the latest Supabase setup. Run supabase-setup.sql to enable this section.";
+    accountsStatus.classList.add("is-error");
+  } else {
+    accountsStatus.textContent = "";
+    accountsStatus.classList.remove("is-error");
+  }
+}
+
+accountsYearFilter.addEventListener("change", renderAccounts);
+document.querySelector("#accounts-details-toggle").addEventListener("click", (event) => {
+  const button = event.currentTarget;
+  const details = document.querySelector("#accounts-details");
+  const expanded = button.getAttribute("aria-expanded") !== "true";
+  button.setAttribute("aria-expanded", String(expanded));
+  details.hidden = !expanded;
+  button.textContent = expanded ? "Hide expenditure details" : "View expenditure details";
+});
 
 function memberInitials(name) {
   return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0] || "").join("").toLocaleUpperCase() || "?";
@@ -828,6 +942,76 @@ function updateRegisterSummary() {
   document.querySelector("#member-total").textContent = numberFormat.format(editingMembers.length);
   document.querySelector("#pledged-total").textContent = `₹${numberFormat.format(pledged)}`;
   document.querySelector("#received-total").textContent = `₹${numberFormat.format(received)}`;
+  renderAccounts();
+  renderManagerExpenseTotals();
+}
+
+function renderManagerExpenseTotals() {
+  const collected = getReceivedTotal(editingMembers);
+  const expenditure = editingExpenses
+    .filter((expense) => expense.year === eventYear)
+    .reduce((total, expense) => total + expense.amount, 0);
+  document.querySelector("#manager-account-collected").textContent = `₹${numberFormat.format(collected)}`;
+  document.querySelector("#manager-account-expenditure").textContent = `₹${numberFormat.format(expenditure)}`;
+  document.querySelector("#manager-account-year-label").textContent = `in ${eventYear}`;
+  document.querySelector("#manager-account-balance").textContent = `₹${numberFormat.format(collected - expenditure)}`;
+}
+
+function renderManagerExpenses() {
+  const fragment = document.createDocumentFragment();
+  [...editingExpenses].sort((left, right) => right.date.localeCompare(left.date)).forEach((expense) => {
+    const row = document.createElement("tr");
+    row.dataset.expenseId = expense.id;
+    [
+      ["date", "date", expense.date],
+      ["part", "text", expense.part],
+      ["amount", "number", String(expense.amount)],
+      ["year", "number", String(expense.year)],
+    ].forEach(([field, type, value]) => {
+      const cell = document.createElement("td");
+      cell.dataset.label = field === "date" ? "Date" : field === "part" ? "Expenditure on" : field === "amount" ? "Amount (₹)" : "Year";
+      const input = document.createElement("input");
+      input.className = `expense-input expense-${field}`;
+      input.type = type;
+      input.value = value;
+      input.dataset.expenseField = field;
+      input.setAttribute("aria-label", cell.dataset.label);
+      if (field === "part") input.maxLength = 120;
+      if (field === "amount") {
+        input.min = "0.01";
+        input.step = "0.01";
+        input.inputMode = "decimal";
+      }
+      if (field === "year") {
+        input.min = String(BASE_YEAR);
+        input.max = "9999";
+        input.step = "1";
+        input.inputMode = "numeric";
+      }
+      input.required = true;
+      cell.append(input);
+      row.append(cell);
+    });
+    const removeCell = document.createElement("td");
+    removeCell.className = "expense-remove-cell";
+    removeCell.dataset.label = "Remove";
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "remove-row";
+    removeButton.dataset.removeExpense = expense.id;
+    removeButton.setAttribute("aria-label", `Remove expense ${expense.part}`);
+    removeButton.textContent = "×";
+    removeCell.append(removeButton);
+    row.append(removeCell);
+    fragment.append(row);
+  });
+  expenseRows.replaceChildren(fragment);
+  renderManagerExpenseTotals();
+}
+
+function setExpenseStatus(message, isError = false) {
+  expenseStatus.textContent = message;
+  expenseStatus.classList.toggle("is-error", isError);
 }
 
 function applyEventSettings() {
@@ -850,6 +1034,7 @@ function applyEventSettings() {
   document.querySelector("#footer-event-year").textContent = `${eventTitle.toUpperCase()} ${eventYear}`;
   eventTitleInput.value = eventTitle;
   eventYearInput.value = String(eventYear);
+  expenseYearInput.value = String(eventYear);
   heroEyebrowInput.value = heroEyebrow;
   heroDescriptionInput.value = heroDescription;
   heroCaptionInput.value = heroCaption;
@@ -858,6 +1043,7 @@ function applyEventSettings() {
   if (heroImagePath) heroImage.src = storageObjectUrl(heroImagePath);
   else heroImage.removeAttribute("src");
   removeHeroPhotoButton.disabled = !heroImagePath || !mediaAuthorized;
+  renderAccounts();
 }
 
 function openEditor() {
@@ -903,8 +1089,10 @@ loginForm.querySelectorAll("input").forEach((input) => {
 
 function prepareEditor() {
   editingMembers = members.map((member) => ({ ...member }));
+  editingExpenses = financeExpenses.map((expense) => ({ ...expense }));
   applyEventSettings();
   renderEditor();
+  renderManagerExpenses();
   editorStatus.textContent = "Changes are not saved until you select Save.";
   editorStatus.classList.remove("is-error");
   editorDialog.classList.add("is-manager");
@@ -1090,6 +1278,112 @@ saveMembersButton.addEventListener("click", async () => {
   setSaveStatus("Shared register updated successfully.");
 });
 
+function localDateValue(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+expenseDateInput.value = localDateValue();
+expenseYearInput.value = String(eventYear);
+document.querySelector("#add-expense").addEventListener("click", () => {
+  const formInputs = [expensePartInput, expenseAmountInput, expenseDateInput, expenseYearInput];
+  const invalidInput = formInputs.find((input) => !input.reportValidity());
+  if (invalidInput) return;
+  const part = expensePartInput.value.trim();
+  const amount = Number(expenseAmountInput.value);
+  const year = Number(expenseYearInput.value);
+  if (!part || !Number.isFinite(amount) || amount <= 0 || !Number.isInteger(year) || year < BASE_YEAR || year > 9999) {
+    setExpenseStatus("Enter a description, valid amount, date, and year.", true);
+    return;
+  }
+  editingExpenses.push({
+    id: `expense-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    part,
+    amount,
+    date: expenseDateInput.value,
+    year,
+  });
+  expensePartInput.value = "";
+  expenseAmountInput.value = "";
+  expenseDateInput.value = localDateValue();
+  expenseYearInput.value = String(eventYear);
+  renderManagerExpenses();
+  setExpenseStatus("Unsaved expenditure changes.");
+});
+
+expenseRows.addEventListener("input", (event) => {
+  const input = event.target;
+  const field = input.dataset.expenseField;
+  const expense = editingExpenses.find((item) => item.id === input.closest("[data-expense-id]")?.dataset.expenseId);
+  if (!expense || !field || input.validity.badInput || !input.validity.valid) return;
+  if (field === "amount" || field === "year") {
+    const value = Number(input.value);
+    if (!Number.isFinite(value)) return;
+    expense[field] = field === "year" ? Math.trunc(value) : value;
+  } else {
+    expense[field] = input.value.trim();
+  }
+  renderManagerExpenseTotals();
+  setExpenseStatus("Unsaved expenditure changes.");
+});
+
+expenseRows.addEventListener("change", (event) => {
+  const input = event.target;
+  const field = input.dataset.expenseField;
+  const expense = editingExpenses.find((item) => item.id === input.closest("[data-expense-id]")?.dataset.expenseId);
+  if (!expense || !field) return;
+  if (field === "amount" || field === "year") {
+    const value = Number(input.value);
+    if (!Number.isFinite(value)) return;
+    expense[field] = field === "year" ? Math.trunc(value) : value;
+  } else {
+    expense[field] = input.value.trim();
+  }
+  renderManagerExpenses();
+  setExpenseStatus("Unsaved expenditure changes.");
+});
+
+expenseRows.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-remove-expense]");
+  if (!button) return;
+  editingExpenses = editingExpenses.filter((expense) => expense.id !== button.dataset.removeExpense);
+  renderManagerExpenses();
+  setExpenseStatus("Unsaved expenditure changes.");
+});
+
+saveExpensesButton.addEventListener("click", async () => {
+  const invalidInput = expenseRows.querySelector(":invalid");
+  if (invalidInput) {
+    invalidInput.reportValidity();
+    setExpenseStatus("Correct the highlighted expenditure details before saving.", true);
+    return;
+  }
+  if (!supportsSharedFinance) {
+    setExpenseStatus("Run the updated supabase-setup.sql before saving shared hisab data.", true);
+    return;
+  }
+  if (!validFinanceExpenses(editingExpenses)) {
+    setExpenseStatus("Each expenditure needs a description, positive amount, date, and year from 2026 onward.", true);
+    return;
+  }
+  saveExpensesButton.disabled = true;
+  setExpenseStatus("Saving shared expenditures…");
+  const previousExpenses = financeExpenses;
+  financeExpenses = editingExpenses.map((expense) => ({ ...expense }));
+  try {
+    await saveSharedRegister(members, eventYear, eventTitle, supportsSharedEventTitle, supportsSharedSiteSettings, false, true, true);
+  } catch (error) {
+    financeExpenses = previousExpenses;
+    setExpenseStatus(error.message || "Unable to save expenditures.", true);
+    return;
+  } finally {
+    saveExpensesButton.disabled = false;
+  }
+  saveLocalRegister(members, eventYear, eventTitle);
+  renderAccounts();
+  renderManagerExpenses();
+  setExpenseStatus("Expenditures saved and shared with everyone.");
+});
+
 for (const input of [eventTitleInput, eventYearInput, heroEyebrowInput, heroDescriptionInput, heroCaptionInput]) {
   input.addEventListener("input", () => {
     document.querySelector("#settings-status").textContent = "Unsaved site details";
@@ -1160,6 +1454,8 @@ managerSignoutButton.addEventListener("click", () => {
   editorContent.hidden = true;
   editorDialog.classList.remove("is-manager");
   loginStatus.textContent = "You have signed out.";
+  editingExpenses = [];
+  renderManagerExpenses();
 });
 document.querySelectorAll("[data-manager-tab]").forEach((tab) => {
   tab.addEventListener("click", () => {
@@ -1312,11 +1608,151 @@ function downloadRegisterPdf(data = members, year = eventYear, title = eventTitl
   if (statusElement) statusElement.textContent = `Downloaded ${fileName}.`;
 }
 
+function buildAccountsPdf(year, title, expenses) {
+  const pageWidth = 842;
+  const pageHeight = 595;
+  const rowsPerPage = 22;
+  const currentYearCollection = year === eventYear ? getReceivedTotal() : null;
+  const expenditure = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const balance = currentYearCollection === null ? null : currentYearCollection - expenditure;
+  const pageCount = Math.max(1, Math.ceil(expenses.length / rowsPerPage));
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+  ];
+  const pageRefs = [];
+  const text = (value, x, y, size, color = "0.16 0.15 0.14") =>
+    `BT /F1 ${size} Tf ${color} rg 1 0 0 1 ${x} ${y} Tm ${pdfText(value)} Tj ET`;
+  const rect = (x, y, width, height, color) =>
+    `q ${color} rg ${x} ${y} ${width} ${height} re f Q`;
+
+  for (let pageIndex = 0; pageIndex < pageCount; pageIndex += 1) {
+    const first = pageIndex * rowsPerPage;
+    const pageRows = expenses.slice(first, first + rowsPerPage);
+    const commands = [
+      rect(0, 0, pageWidth, pageHeight, "0.99 0.98 0.95"),
+      rect(0, 562, pageWidth, 33, "0.20 0.36 0.30"),
+      text("KARKATTA  |  PALAMU, JHARKHAND", 38, 574, 9, "1 0.96 0.87"),
+      text(`${title} COMMUNITY HISAB  |  ${year}`, 38, 538, 19, "0.16 0.30 0.24"),
+      text(`Collection and expenditure  |  Page ${pageIndex + 1} of ${pageCount}`, 38, 520, 9, "0.42 0.39 0.35"),
+    ];
+    const summary = [
+      ["COLLECTED", currentYearCollection === null ? "Not available" : `INR ${numberFormat.format(currentYearCollection)}`, "0.90 0.95 0.90"],
+      ["EXPENDITURE", `INR ${numberFormat.format(expenditure)}`, "0.98 0.93 0.85"],
+      ["BALANCE", balance === null ? "Not available" : `INR ${numberFormat.format(balance)}`, balance !== null && balance < 0 ? "0.98 0.89 0.87" : "0.91 0.95 0.90"],
+      ["EXPENSE ITEMS", String(expenses.length), "0.92 0.90 0.97"],
+    ];
+    summary.forEach(([label, value, color], index) => {
+      const x = 38 + index * 192;
+      commands.push(rect(x, 464, 180, 43, color));
+      commands.push(text(label, x + 10, 490, 7, "0.38 0.34 0.30"));
+      commands.push(text(value, x + 10, 474, 11, "0.16 0.30 0.24"));
+    });
+
+    const columns = [38, 142, 640, 804];
+    const tableTop = 446;
+    const rowHeight = 17;
+    commands.push(rect(38, tableTop - 23, 766, 23, "0.20 0.36 0.30"));
+    [["DATE", columns[0] + 8], ["EXPENDITURE ON", columns[1] + 8], ["AMOUNT (INR)", columns[2] + 8]]
+      .forEach(([label, x]) => commands.push(text(label, x, tableTop - 15, 7, "1 0.97 0.91")));
+    pageRows.forEach((expense, rowIndex) => {
+      const y = tableTop - 23 - (rowIndex + 1) * rowHeight;
+      commands.push(rect(38, y, 766, rowHeight, rowIndex % 2 === 0 ? "1 1 1" : "0.95 0.98 0.95"));
+      commands.push(text(new Date(`${expense.date}T00:00:00`).toLocaleDateString(), columns[0] + 8, y + 5, 8));
+      commands.push(text(expense.part.slice(0, 72), columns[1] + 8, y + 5, 8));
+      commands.push(text(numberFormat.format(expense.amount), columns[2] + 8, y + 5, 8));
+      commands.push(`q 0.87 0.84 0.79 RG 0.4 w ${columns[0]} ${y} m ${columns[3]} ${y} l S Q`);
+    });
+    const content = commands.join("\n");
+    const pageObject = 4 + pageIndex * 2;
+    const contentObject = pageObject + 1;
+    pageRefs.push(`${pageObject} 0 R`);
+    objects.push(
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 3 0 R >> >> /Contents ${contentObject} 0 R >>`,
+      `<< /Length ${new TextEncoder().encode(content).length} >>\nstream\n${content}\nendstream`,
+    );
+  }
+  objects[1] = `<< /Type /Pages /Kids [${pageRefs.join(" ")}] /Count ${pageCount} >>`;
+  let documentText = "%PDF-1.4\n";
+  const offsets = [0];
+  objects.forEach((object, index) => {
+    offsets.push(new TextEncoder().encode(documentText).length);
+    documentText += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+  const xrefOffset = new TextEncoder().encode(documentText).length;
+  documentText += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  offsets.slice(1).forEach((offset) => {
+    documentText += `${String(offset).padStart(10, "0")} 00000 n \n`;
+  });
+  documentText += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+  return new Blob([documentText], { type: "application/pdf" });
+}
+
+function getAccountPdfData() {
+  const year = Number(accountsYearFilter.value) || eventYear;
+  const expenses = financeExpenses.filter((expense) => expense.year === year);
+  return { year, expenses };
+}
+
+function accountPdfFileName(year) {
+  return `karkatta-community-hisab-${year}.pdf`;
+}
+
+function openAccountsPdf(statusElement) {
+  const { year, expenses } = getAccountPdfData();
+  const fileName = accountPdfFileName(year);
+  const url = URL.createObjectURL(buildAccountsPdf(year, eventTitle, expenses));
+  const viewer = window.open(url, "_blank");
+  if (!viewer) {
+    URL.revokeObjectURL(url);
+    downloadAccountsPdf(statusElement);
+    return;
+  }
+  viewer.opener = null;
+  window.setTimeout(() => URL.revokeObjectURL(url), 5 * 60 * 1000);
+  statusElement.textContent = `Opened ${fileName}. Use the PDF viewer to save or print.`;
+}
+
+function downloadAccountsPdf(statusElement) {
+  const { year, expenses } = getAccountPdfData();
+  const fileName = accountPdfFileName(year);
+  const url = URL.createObjectURL(buildAccountsPdf(year, eventTitle, expenses));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  link.style.display = "none";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  statusElement.textContent = `Downloaded ${fileName}.`;
+}
+
 function handlePdfError(statusElement, error) {
   if (statusElement) statusElement.textContent = error.message || "Unable to create the PDF.";
 }
 
 const publicPdfStatus = document.querySelector("#public-pdf-status");
+document.querySelector("#accounts-refresh").addEventListener("click", async (event) => {
+  const button = event.currentTarget;
+  button.disabled = true;
+  accountsStatus.textContent = "Refreshing collection and expenditure data…";
+  accountsStatus.classList.remove("is-error");
+  try {
+    await loadSharedRegister(false, null, accountsStatus);
+  } finally {
+    button.disabled = false;
+  }
+});
+document.querySelector("#accounts-view-pdf").addEventListener("click", () => {
+  try { openAccountsPdf(accountsStatus); }
+  catch (error) { handlePdfError(accountsStatus, error); }
+});
+document.querySelector("#accounts-download-pdf").addEventListener("click", () => {
+  try { downloadAccountsPdf(accountsStatus); }
+  catch (error) { handlePdfError(accountsStatus, error); }
+});
 document.querySelector("#public-view-pdf").addEventListener("click", () => {
   try { openRegisterPdf(members, eventYear, eventTitle, publicPdfStatus); }
   catch (error) { handlePdfError(publicPdfStatus, error); }
@@ -1587,6 +2023,35 @@ function renderGalleryMedia() {
   galleryEmpty.hidden = selectedYear === BASE_YEAR || publicMedia.length > 0;
   galleryEmpty.textContent = `No celebration photos or videos are available for ${selectedYear} yet.`;
 }
+
+async function saveManagerSection(button, statusTarget, successMessage) {
+  if (!authSession || authSession.expires_at <= Date.now() / 1000) {
+    statusTarget.textContent = "Your admin session has expired. Sign in again before saving this section.";
+    statusTarget.classList.add("is-error");
+    return;
+  }
+  button.disabled = true;
+  statusTarget.textContent = "Saving shared section…";
+  statusTarget.classList.remove("is-error");
+  try {
+    await saveSharedRegister(members, eventYear, eventTitle);
+  } catch (error) {
+    statusTarget.textContent = error.message || "Unable to save this section.";
+    statusTarget.classList.add("is-error");
+    return;
+  } finally {
+    button.disabled = false;
+  }
+  saveLocalRegister(members, eventYear, eventTitle);
+  statusTarget.textContent = successMessage;
+}
+
+document.querySelector("#save-member-photos").addEventListener("click", (event) => {
+  saveManagerSection(event.currentTarget, memberPhotoStatus, "Member photo changes are saved and shared.");
+});
+document.querySelector("#save-gallery-media").addEventListener("click", (event) => {
+  saveManagerSection(event.currentTarget, mediaStatus, "Gallery changes are saved and shared.");
+});
 
 galleryYearFilter.addEventListener("change", renderGalleryMedia);
 managerGalleryYearFilter.addEventListener("change", renderGalleryMedia);
