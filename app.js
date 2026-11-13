@@ -586,7 +586,7 @@ async function saveSharedRegister(
     if (includeFinance && /finance_expenses/i.test(error.message || "")) {
       supportsSharedFinance = false;
       if (requireFinance) {
-        throw new Error("Run the updated supabase-setup.sql to enable shared community accounting.");
+        throw new Error("Run the updated supabase-setup.sql to enable shared Hisab.");
       }
       return saveSharedRegister(value, year, title, includeTitle, includeSiteSettings, requireSiteSettings, false, false);
     }
@@ -1634,7 +1634,7 @@ function buildAccountsPdf(year, title, expenses) {
       rect(0, 0, pageWidth, pageHeight, "0.99 0.98 0.95"),
       rect(0, 562, pageWidth, 33, "0.20 0.36 0.30"),
       text("KARKATTA  |  PALAMU, JHARKHAND", 38, 574, 9, "1 0.96 0.87"),
-      text(`${title} COMMUNITY HISAB  |  ${year}`, 38, 538, 19, "0.16 0.30 0.24"),
+      text(`${title} HISAB  |  ${year}`, 38, 538, 19, "0.16 0.30 0.24"),
       text(`Collection and expenditure  |  Page ${pageIndex + 1} of ${pageCount}`, 38, 520, 9, "0.42 0.39 0.35"),
     ];
     const summary = [
@@ -1696,7 +1696,7 @@ function getAccountPdfData() {
 }
 
 function accountPdfFileName(year) {
-  return `karkatta-community-hisab-${year}.pdf`;
+  return `karkatta-hisab-${year}.pdf`;
 }
 
 function openAccountsPdf(statusElement) {
