@@ -96,8 +96,8 @@ const chooseMediaButton = document.querySelector("#choose-media");
 const memberPhotoSelect = document.querySelector("#member-photo-select");
 const memberPhotoInput = document.querySelector("#member-photo-input");
 const chooseMemberPhotoButton = document.querySelector("#choose-member-photo");
-const removeMemberPhotoButton = document.querySelector("#remove-member-photo");
 const memberPhotoStatus = document.querySelector("#member-photo-status");
+const mediaCaptionInput = document.querySelector("#media-caption-input");
 const managerSignoutButton = document.querySelector("#manager-signout");
 const numberFormat = new Intl.NumberFormat("en-IN");
 const BASE_YEAR = 2026;
@@ -141,6 +141,7 @@ function validGalleryMedia(value) {
     typeof item.name === "string" &&
     typeof item.path === "string" &&
     typeof item.type === "string" &&
+    (item.caption === undefined || typeof item.caption === "string") &&
     (item.type.startsWith("image/") || item.type.startsWith("video/"))
   );
 }
@@ -630,7 +631,10 @@ function renderMemberCards(data = members) {
     number.textContent = `MEMBER PHOTO ${String(index + 1).padStart(2, "0")}`;
     const name = document.createElement("strong");
     name.textContent = member.name || "New member";
-    copy.append(number, name);
+    const paidStatus = document.createElement("span");
+    paidStatus.className = member.paid ? "member-card-status is-paid" : "member-card-status";
+    paidStatus.textContent = member.paid ? "Paid" : "Pending";
+    copy.append(number, name, paidStatus);
     card.append(frame, copy);
     fragment.append(card);
   });
@@ -660,30 +664,31 @@ function renderManagerMemberPhotos() {
     const item = document.createElement("div");
     item.className = "manager-member-photo-item";
     const url = member.photo_path ? storageObjectUrl(member.photo_path) : null;
+    const thumb = document.createElement("div");
+    thumb.className = "manager-member-photo-thumb";
     if (url) {
       const image = document.createElement("img");
       image.src = url;
       image.alt = "";
-      item.append(image);
+      thumb.append(image);
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "manager-photo-delete";
+      remove.textContent = "×";
+      remove.disabled = !mediaAuthorized;
+      remove.setAttribute("aria-label", `Delete photo for ${member.name}`);
+      remove.addEventListener("click", () => removeMemberPhoto(member));
+      thumb.append(remove);
     } else {
       const placeholder = document.createElement("span");
       placeholder.className = "manager-member-photo-placeholder";
       placeholder.textContent = memberInitials(member.name);
-      item.append(placeholder);
+      thumb.append(placeholder);
     }
+    item.append(thumb);
     const name = document.createElement("strong");
     name.textContent = member.name || "New member";
     item.append(name);
-    if (url) {
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.className = "button button-outline";
-      remove.textContent = "Delete";
-      remove.disabled = !mediaAuthorized;
-      remove.setAttribute("aria-label", `Delete photo for ${member.name}`);
-      remove.addEventListener("click", () => removeMemberPhoto(member));
-      item.append(remove);
-    }
     fragment.append(item);
   });
   list.replaceChildren(fragment);
@@ -695,7 +700,6 @@ function updateSelectedMemberPhotoControls() {
   const signedIn = mediaAuthorized && authSession && authSession.expires_at > Date.now() / 1000;
   chooseMemberPhotoButton.disabled = !signedIn || !member;
   chooseMemberPhotoButton.textContent = hasPhoto ? "Replace member photo" : "Add member photo";
-  removeMemberPhotoButton.disabled = !signedIn || !hasPhoto;
 }
 
 async function removeMemberPhoto(member) {
@@ -707,7 +711,6 @@ async function removeMemberPhoto(member) {
     delete updated.photo_path;
     return updated;
   });
-  removeMemberPhotoButton.disabled = true;
   memberPhotoStatus.textContent = `Deleting ${member.name}'s photo…`;
   memberPhotoStatus.classList.remove("is-error");
   try {
@@ -792,7 +795,30 @@ function openEditor() {
   loginStatus.textContent = "";
   if (signedIn) prepareEditor();
   editorDialog.showModal();
+  requestAnimationFrame(fitManagerDialogToViewport);
 }
+
+function fitManagerDialogToViewport() {
+  if (!editorDialog.open || window.matchMedia("(min-width: 701px)").matches) return;
+  const viewport = window.visualViewport;
+  if (!viewport) return;
+  const top = Math.max(8, viewport.offsetTop + 8);
+  const bottom = Math.max(8, window.innerHeight - viewport.offsetTop - viewport.height + 8);
+  editorDialog.style.top = `${top}px`;
+  editorDialog.style.bottom = `${bottom}px`;
+}
+
+window.visualViewport?.addEventListener("resize", fitManagerDialogToViewport);
+window.visualViewport?.addEventListener("scroll", fitManagerDialogToViewport);
+editorDialog.addEventListener("close", () => {
+  editorDialog.style.removeProperty("top");
+  editorDialog.style.removeProperty("bottom");
+});
+loginForm.querySelectorAll("input").forEach((input) => {
+  input.addEventListener("focus", () => {
+    window.setTimeout(() => input.scrollIntoView({ block: "nearest", behavior: "smooth" }), 150);
+  });
+});
 
 function prepareEditor() {
   editingMembers = members.map((member) => ({ ...member }));
@@ -814,10 +840,13 @@ loginForm.addEventListener("submit", async (event) => {
   submitButton.disabled = true;
   loginStatus.textContent = "Signing in…";
   loginStatus.classList.remove("is-error");
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 30_000);
   try {
     const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method: "POST",
       cache: "no-store",
+      signal: controller.signal,
       headers: {
         apikey: SUPABASE_PUBLISHABLE_KEY,
         "Content-Type": "application/json",
@@ -827,6 +856,7 @@ loginForm.addEventListener("submit", async (event) => {
         password: document.querySelector("#admin-password").value,
       }),
     });
+    window.clearTimeout(timeout);
     const responseText = await response.text();
     let result;
     try {
@@ -835,7 +865,7 @@ loginForm.addEventListener("submit", async (event) => {
       throw new Error("Supabase returned an unreadable sign-in response. Check the project URL and publishable key.");
     }
     if (!response.ok) {
-      const message = result.msg || result.message || "Sign-in failed.";
+      const message = result.msg || result.message || result.error_description || result.error || "Sign-in failed.";
       if (message.toLowerCase().includes("invalid api key")) {
         throw new Error("Supabase rejected the configured publishable key. Copy the Publishable key from Settings → API Keys in the same project as the configured Supabase URL, then replace SUPABASE_PUBLISHABLE_KEY in app.js.");
       }
@@ -867,9 +897,12 @@ loginForm.addEventListener("submit", async (event) => {
     loginForm.reset();
     loginStatus.textContent = "";
   } catch (error) {
-    loginStatus.textContent = error.message || "Unable to sign in.";
+    loginStatus.textContent = error.name === "AbortError"
+      ? "Sign-in timed out. Check your mobile connection and try again."
+      : error.message || "Unable to sign in.";
     loginStatus.classList.add("is-error");
   } finally {
+    window.clearTimeout(timeout);
     submitButton.disabled = false;
   }
 });
@@ -1028,7 +1061,6 @@ managerSignoutButton.addEventListener("click", () => {
   chooseMediaButton.disabled = true;
   memberPhotoInput.disabled = true;
   chooseMemberPhotoButton.disabled = true;
-  removeMemberPhotoButton.disabled = true;
   heroPhotoInput.disabled = true;
   chooseHeroPhotoButton.disabled = true;
   removeHeroPhotoButton.disabled = true;
@@ -1156,24 +1188,27 @@ function buildRegisterPdf(data, year, title) {
   return new Blob([documentText], { type: "application/pdf" });
 }
 
-async function exportRegisterPdf(data = members, year = eventYear, title = eventTitle, statusElement = null) {
-  const fileName = `${title.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "")}-${year}-register.pdf`;
-  const pdf = buildRegisterPdf(data, year, title);
-  const file = new File([pdf], fileName, { type: "application/pdf" });
-  if (navigator.canShare?.({ files: [file] }) && navigator.share) {
-    try {
-      await navigator.share({ files: [file], title: `${title} ${year} register` });
-      if (statusElement) statusElement.textContent = "PDF ready. Choose Save to Files or Downloads from the share menu.";
-    } catch (error) {
-      if (error.name === "AbortError") {
-        if (statusElement) statusElement.textContent = "PDF export canceled.";
-        return;
-      }
-      throw error;
-    }
+function registerPdfFileName(title, year) {
+  return `${title.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "")}-${year}-register.pdf`;
+}
+
+function openRegisterPdf(data = members, year = eventYear, title = eventTitle, statusElement = null) {
+  const fileName = registerPdfFileName(title, year);
+  const url = URL.createObjectURL(buildRegisterPdf(data, year, title));
+  const viewer = window.open(url, "_blank");
+  if (!viewer) {
+    URL.revokeObjectURL(url);
+    downloadRegisterPdf(data, year, title, statusElement);
     return;
   }
-  const url = URL.createObjectURL(pdf);
+  viewer.opener = null;
+  window.setTimeout(() => URL.revokeObjectURL(url), 5 * 60 * 1000);
+  if (statusElement) statusElement.textContent = `Opened ${fileName}. Use the PDF viewer to save, download, or print.`;
+}
+
+function downloadRegisterPdf(data = members, year = eventYear, title = eventTitle, statusElement = null) {
+  const fileName = registerPdfFileName(title, year);
+  const url = URL.createObjectURL(buildRegisterPdf(data, year, title));
   const link = document.createElement("a");
   link.href = url;
   link.download = fileName;
@@ -1185,15 +1220,27 @@ async function exportRegisterPdf(data = members, year = eventYear, title = event
   if (statusElement) statusElement.textContent = `Downloaded ${fileName}.`;
 }
 
+function handlePdfError(statusElement, error) {
+  if (statusElement) statusElement.textContent = error.message || "Unable to create the PDF.";
+}
+
 const publicPdfStatus = document.querySelector("#public-pdf-status");
-document.querySelector("#public-export-pdf").addEventListener("click", () =>
-  exportRegisterPdf(members, eventYear, eventTitle, publicPdfStatus)
-    .catch((error) => { publicPdfStatus.textContent = error.message || "Unable to export the PDF."; })
-);
-document.querySelector("#export-pdf").addEventListener("click", () =>
-  exportRegisterPdf(editingMembers, eventYear, eventTitle, editorStatus)
-    .catch((error) => { editorStatus.textContent = error.message || "Unable to export the PDF."; })
-);
+document.querySelector("#public-view-pdf").addEventListener("click", () => {
+  try { openRegisterPdf(members, eventYear, eventTitle, publicPdfStatus); }
+  catch (error) { handlePdfError(publicPdfStatus, error); }
+});
+document.querySelector("#public-download-pdf").addEventListener("click", () => {
+  try { downloadRegisterPdf(members, eventYear, eventTitle, publicPdfStatus); }
+  catch (error) { handlePdfError(publicPdfStatus, error); }
+});
+document.querySelector("#manager-view-pdf").addEventListener("click", () => {
+  try { openRegisterPdf(editingMembers, eventYear, eventTitle, editorStatus); }
+  catch (error) { handlePdfError(editorStatus, error); }
+});
+document.querySelector("#manager-download-pdf").addEventListener("click", () => {
+  try { downloadRegisterPdf(editingMembers, eventYear, eventTitle, editorStatus); }
+  catch (error) { handlePdfError(editorStatus, error); }
+});
 
 const mediaGrid = document.querySelector("#media-grid");
 const mediaStatus = document.querySelector("#media-status");
@@ -1217,11 +1264,6 @@ chooseMemberPhotoButton.addEventListener("click", () => {
     return;
   }
   memberPhotoInput.click();
-});
-
-removeMemberPhotoButton.addEventListener("click", () => {
-  const member = members.find((item) => item.id === memberPhotoSelect.value);
-  if (member) removeMemberPhoto(member);
 });
 
 memberPhotoInput.addEventListener("change", async () => {
@@ -1393,8 +1435,14 @@ function createMediaCard(item, manager = false) {
   }
   const name = document.createElement("div");
   name.className = "media-name";
-  name.textContent = item.name;
+  name.textContent = item.caption || item.name;
   card.append(preview, name);
+  if (item.caption) {
+    const fileName = document.createElement("div");
+    fileName.className = "media-file-name";
+    fileName.textContent = item.name;
+    card.append(fileName);
+  }
   if (manager) {
     const remove = document.createElement("button");
     remove.type = "button";
@@ -1462,7 +1510,8 @@ async function addMediaFiles(files) {
     await uploadStorageFile(file, path, (sent, total) => {
       mediaStatus.textContent = `Uploading ${file.name}… ${Math.floor(sent / total * 100)}%`;
     });
-    const item = { id: path, name: file.name, type: file.type, path };
+    const caption = mediaCaptionInput.value.trim();
+    const item = { id: path, name: file.name, type: file.type, path, caption };
     const previousMedia = galleryMedia;
     galleryMedia = [...galleryMedia, item];
     try {

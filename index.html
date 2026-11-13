@@ -78,7 +78,10 @@ Celebrating the beauty of Chhath in Karkatta.</p>
             <h2 id="public-register-title">Members register · 2026</h2>
             <p class="section-description">Community contributions for this celebration.</p>
           </div>
-          <button id="public-export-pdf" class="button button-primary" type="button">Export PDF</button>
+          <div class="pdf-actions">
+            <button id="public-view-pdf" class="button button-primary" type="button">View / Print PDF</button>
+            <button id="public-download-pdf" class="button button-outline" type="button">Download PDF</button>
+          </div>
         </div>
         <p id="public-pdf-status" class="pdf-status" role="status" aria-live="polite"></p>
         <div class="register-summary" aria-label="Contribution totals">
@@ -110,14 +113,14 @@ Celebrating the beauty of Chhath in Karkatta.</p>
         <div id="gallery-cards" class="gallery-cards" aria-live="polite">
           <article class="gallery-card gallery-photo-card">
             <img src="assets/chhath-sample-photo.svg" alt="Illustrated Chhath offerings by the river at sunset">
-            <div class="gallery-card-copy"><span class="gallery-tag">SAMPLE PHOTO</span><h3>Evening Arghya</h3><p>A sample illustration for the Karkatta celebration gallery.</p></div>
+            <div class="gallery-card-copy"><span class="gallery-tag">COMMUNITY PHOTO</span><h3>Evening Arghya</h3><p>A Chhath celebration by the river in Karkatta.</p></div>
           </article>
           <article class="gallery-card gallery-video-card">
-            <video controls preload="metadata" poster="assets/chhath-sample-video-poster.svg" aria-label="Sample Chhath celebration video">
+            <video controls preload="metadata" poster="assets/chhath-sample-video-poster.svg" aria-label="Chhath celebration video showing sunset by the river">
               <source src="assets/chhath-sample-video.mp4" type="video/mp4">
               Your browser does not support video playback.
             </video>
-            <div class="gallery-card-copy"><span class="gallery-tag">SAMPLE VIDEO</span><h3>Sunset by the river</h3><p>A short, locally hosted sample clip. Replace with community moments in Manager.</p></div>
+            <div class="gallery-card-copy"><span class="gallery-tag">COMMUNITY VIDEO</span><h3>Sunset by the river</h3><p>Community moments from Chhath celebrations in Karkatta.</p></div>
           </article>
         </div>
         <div id="media-grid" class="media-grid" aria-live="polite"></div>
@@ -129,7 +132,7 @@ Celebrating the beauty of Chhath in Karkatta.</p>
         <h2>Admin sign in</h2>
         <p>Sign in with the authorized Supabase admin account to update the shared register.</p>
         <label>Email
-          <input id="admin-email" type="email" autocomplete="username" required>
+          <input id="admin-email" type="email" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" required>
         </label>
         <label>Password
           <input id="admin-password" type="password" autocomplete="current-password" required>
@@ -173,7 +176,8 @@ Celebrating the beauty of Chhath in Karkatta.</p>
               <input id="member-search" type="search" placeholder="Find a member" autocomplete="off">
             </label>
             <button id="add-member" class="button button-outline" type="button">Add member</button>
-            <button id="export-pdf" class="button button-outline" type="button">Export PDF</button>
+            <button id="manager-view-pdf" class="button button-outline" type="button">View / Print PDF</button>
+            <button id="manager-download-pdf" class="button button-outline" type="button">Download PDF</button>
             <button id="save-members" class="button button-primary" type="button">Save</button>
           </div>
           <p id="editor-status" class="editor-status" role="status" aria-live="polite">Changes are not saved until you select Save.</p>
@@ -228,7 +232,6 @@ Celebrating the beauty of Chhath in Karkatta.</p>
             <select id="member-photo-select" class="settings-input"></select>
             <input id="member-photo-input" class="visually-hidden" type="file" accept="image/*" disabled>
             <button id="choose-member-photo" class="button button-outline" type="button" disabled>Add member photo</button>
-            <button id="remove-member-photo" class="button button-outline" type="button" disabled>Delete selected member photo</button>
             <p id="member-photo-status" class="editor-status" role="status" aria-live="polite">Member photos are saved and shared with everyone.</p>
           </div>
           <div id="manager-member-photo-list" class="manager-member-photo-list"></div>
@@ -246,6 +249,9 @@ Celebrating the beauty of Chhath in Karkatta.</p>
             <button id="choose-media" class="button button-outline" type="button" disabled>Choose files</button>
             <p id="media-status" class="upload-note" role="status" aria-live="polite">Sign in to manage shared media.</p>
           </div>
+          <label class="media-caption-field">Photo/video caption
+            <textarea id="media-caption-input" class="settings-input settings-textarea" maxlength="160" rows="2" placeholder="Write a short caption to show with the uploaded media"></textarea>
+          </label>
           <div id="manager-media-grid" class="media-grid" aria-live="polite"></div>
         </section>
       </div>
