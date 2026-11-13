@@ -602,7 +602,7 @@ function memberInitials(name) {
 
 function renderMemberCards(data = members) {
   const fragment = document.createDocumentFragment();
-  data.slice(0, 20).forEach((member, index) => {
+  data.forEach((member, index) => {
     const card = document.createElement("article");
     card.className = "member-card";
     const frame = document.createElement("div");
@@ -631,10 +631,7 @@ function renderMemberCards(data = members) {
     number.textContent = `MEMBER PHOTO ${String(index + 1).padStart(2, "0")}`;
     const name = document.createElement("strong");
     name.textContent = member.name || "New member";
-    const paidStatus = document.createElement("span");
-    paidStatus.className = member.paid ? "member-card-status is-paid" : "member-card-status";
-    paidStatus.textContent = member.paid ? "Paid" : "Pending";
-    copy.append(number, name, paidStatus);
+    copy.append(number, name);
     card.append(frame, copy);
     fragment.append(card);
   });
@@ -643,7 +640,7 @@ function renderMemberCards(data = members) {
 
 function populateMemberPhotoSelect() {
   const selectedMemberId = memberPhotoSelect.value;
-  const options = members.slice(0, 20).map((member, index) => {
+  const options = members.map((member, index) => {
     const option = document.createElement("option");
     option.value = member.id;
     option.textContent = `${String(index + 1).padStart(2, "0")} · ${member.name || "New member"}`;
@@ -660,7 +657,7 @@ function populateMemberPhotoSelect() {
 function renderManagerMemberPhotos() {
   const list = document.querySelector("#manager-member-photo-list");
   const fragment = document.createDocumentFragment();
-  members.slice(0, 20).forEach((member) => {
+  members.forEach((member) => {
     const item = document.createElement("div");
     item.className = "manager-member-photo-item";
     const url = member.photo_path ? storageObjectUrl(member.photo_path) : null;
