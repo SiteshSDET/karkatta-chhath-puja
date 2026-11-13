@@ -79,10 +79,12 @@ Celebrating the beauty of Chhath in Karkatta.</p>
             <p class="section-description">Community contributions for this celebration.</p>
           </div>
           <div class="pdf-actions">
+            <button id="public-refresh" class="button button-outline" type="button">Refresh data</button>
             <button id="public-view-pdf" class="button button-primary" type="button">View / Print PDF</button>
             <button id="public-download-pdf" class="button button-outline" type="button">Download PDF</button>
           </div>
         </div>
+        <p id="public-refresh-status" class="pdf-status" role="status" aria-live="polite">Loading the latest shared data…</p>
         <p id="public-pdf-status" class="pdf-status" role="status" aria-live="polite"></p>
         <div class="register-summary" aria-label="Contribution totals">
           <article class="summary-card"><span>Members</span><strong id="public-member-total">52</strong><small>in the register</small></article>
@@ -178,6 +180,7 @@ Celebrating the beauty of Chhath in Karkatta.</p>
             <button id="add-member" class="button button-outline" type="button">Add member</button>
             <button id="manager-view-pdf" class="button button-outline" type="button">View / Print PDF</button>
             <button id="manager-download-pdf" class="button button-outline" type="button">Download PDF</button>
+            <button id="manager-refresh" class="button button-outline" type="button">Refresh data</button>
             <button id="save-members" class="button button-primary" type="button">Save</button>
           </div>
           <p id="editor-status" class="editor-status" role="status" aria-live="polite">Changes are not saved until you select Save.</p>

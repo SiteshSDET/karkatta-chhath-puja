@@ -72,6 +72,9 @@ const membersTrigger = document.querySelector("#members-trigger");
 const memberSearch = document.querySelector("#member-search");
 const publicMemberRows = document.querySelector("#public-member-rows");
 const memberCards = document.querySelector("#member-cards");
+const publicRefreshButton = document.querySelector("#public-refresh");
+const publicRefreshStatus = document.querySelector("#public-refresh-status");
+const managerRefreshButton = document.querySelector("#manager-refresh");
 const editorDialog = document.querySelector("#member-editor");
 const editorRows = document.querySelector("#editor-rows");
 const editorStatus = document.querySelector("#editor-status");
@@ -115,6 +118,7 @@ let authSession = null;
 let mediaAuthorized = false;
 let supportsSharedEventTitle = true;
 let supportsSharedSiteSettings = true;
+let sharedLoadSequence = 0;
 
 function isValidYear(value) {
   return Number.isInteger(value) && value >= 1 && value <= 9999;
@@ -352,7 +356,8 @@ async function deleteStorageFile(path) {
   await getApiResult(response);
 }
 
-async function loadSharedRegister(useLegacySchema = false) {
+async function loadSharedRegister(useLegacySchema = false, requestId = null, statusTarget = null) {
+  if (requestId === null) requestId = ++sharedLoadSequence;
   const legacyOnly = useLegacySchema === "legacy";
   const select = legacyOnly
     ? "members,event_year"
@@ -374,9 +379,14 @@ async function loadSharedRegister(useLegacySchema = false) {
     if (!Array.isArray(rows) || rows.length > 1) {
       throw new Error("The shared register response is invalid.");
     }
+    if (requestId !== sharedLoadSequence) return false;
     if (rows.length === 0) {
       setSaveStatus("No shared register saved yet. Sign in as admin to initialize it.");
-      return true;
+      if (statusTarget) {
+        statusTarget.textContent = "No shared register is saved in Supabase; the displayed data may be local or sample data.";
+        statusTarget.classList.add("is-error");
+      }
+      return false;
     }
     const register = rows[0];
     if (!isValidMembers(register.members) || !isValidYear(register.event_year)) {
@@ -409,22 +419,70 @@ async function loadSharedRegister(useLegacySchema = false) {
     renderPublicRegister();
     populateMemberPhotoSelect();
     renderGalleryMedia();
-    renderEditor();
+    if (!editorDialog.open) renderEditor();
     setSaveStatus("Shared register loaded");
+    if (statusTarget) {
+      statusTarget.textContent = `Latest shared data loaded at ${new Date().toLocaleTimeString()}.`;
+      statusTarget.classList.remove("is-error");
+    }
     return true;
   } catch (error) {
+    if (requestId !== sharedLoadSequence) return false;
     if (!useLegacySchema && !legacyOnly && /hero_eyebrow|hero_description|hero_caption|hero_image_path|gallery_media/i.test(error.message || "")) {
       supportsSharedSiteSettings = false;
-      return loadSharedRegister(true);
+      return loadSharedRegister(true, requestId, statusTarget);
     }
     if (useLegacySchema !== "legacy" && /event_title/i.test(error.message || "")) {
       supportsSharedEventTitle = false;
-      return loadSharedRegister("legacy");
+      return loadSharedRegister("legacy", requestId, statusTarget);
     }
     setSaveStatus(`Shared register unavailable: ${error.message}`, true);
+    if (statusTarget) {
+      statusTarget.textContent = `Refresh failed: ${error.message}`;
+      statusTarget.classList.add("is-error");
+    }
     return false;
   }
 }
+
+publicRefreshButton.addEventListener("click", async () => {
+  publicRefreshButton.disabled = true;
+  publicRefreshStatus.textContent = "Loading the latest shared data…";
+  publicRefreshStatus.classList.remove("is-error");
+  try {
+    await loadSharedRegister(false, null, publicRefreshStatus);
+  } finally {
+    publicRefreshButton.disabled = false;
+  }
+});
+
+managerRefreshButton.addEventListener("click", async () => {
+  if (!authSession || authSession.expires_at <= Date.now() / 1000) {
+    editorStatus.textContent = "Your admin session has expired. Sign in again before refreshing Manager data.";
+    editorStatus.classList.add("is-error");
+    return;
+  }
+  const hasUnsavedChanges = editorStatus.textContent.includes("Unsaved changes") ||
+    eventTitleInput.value.trim() !== eventTitle ||
+    Number(eventYearInput.value) !== eventYear ||
+    heroEyebrowInput.value !== heroEyebrow ||
+    heroDescriptionInput.value !== heroDescription ||
+    heroCaptionInput.value !== heroCaption;
+  if (hasUnsavedChanges && !window.confirm("Discard your unsaved changes and load the latest shared data?")) return;
+  managerRefreshButton.disabled = true;
+  editorStatus.textContent = "Loading the latest shared data…";
+  editorStatus.classList.remove("is-error");
+  try {
+    const loaded = await loadSharedRegister();
+    if (loaded) {
+      prepareEditor();
+      editorStatus.textContent = `Latest shared data loaded at ${new Date().toLocaleTimeString()}.`;
+      editorStatus.classList.remove("is-error");
+    }
+  } finally {
+    managerRefreshButton.disabled = false;
+  }
+});
 
 async function saveSharedRegister(
   value,
@@ -1555,8 +1613,12 @@ for (const eventName of ["dragleave", "drop"]) {
 applyEventSettings();
 renderPublicRegister();
 renderGalleryMedia();
-loadSharedRegister();
+loadSharedRegister(false, null, publicRefreshStatus);
 
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && !editorDialog.open) loadSharedRegister();
+  if (document.visibilityState === "visible" && !editorDialog.open) {
+    publicRefreshStatus.textContent = "Checking for the latest shared data…";
+    publicRefreshStatus.classList.remove("is-error");
+    loadSharedRegister(false, null, publicRefreshStatus);
+  }
 });

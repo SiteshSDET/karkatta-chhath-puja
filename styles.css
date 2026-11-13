@@ -175,6 +175,7 @@ button { color: inherit; }
 .register-heading .button { flex: 0 0 auto; }
 .pdf-status { min-height: 15px; margin: -13px 0 9px; color: var(--green); font-size: 10px; }
 .pdf-status:not(:empty) { min-height: 15px; }
+.pdf-status.is-error { color: #a63d30; }
 .pdf-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .public-table-scroll { overflow-x: visible; }
 .public-member-table th:nth-child(2) { width: 34%; }
