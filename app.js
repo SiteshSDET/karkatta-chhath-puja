@@ -435,7 +435,13 @@ loginForm.addEventListener("submit", async (event) => {
         password: document.querySelector("#admin-password").value,
       }),
     });
-    const result = await response.json();
+    const responseText = await response.text();
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch {
+      throw new Error("Supabase returned an unreadable sign-in response. Check the project URL and publishable key.");
+    }
     if (!response.ok) {
       const message = result.msg || result.message || "Sign-in failed.";
       if (message.toLowerCase().includes("invalid api key")) {
@@ -444,7 +450,7 @@ loginForm.addEventListener("submit", async (event) => {
       throw new Error(message);
     }
     if (result.user?.app_metadata?.register_admin !== true) {
-      throw new Error("This account is not authorized to edit the shared register.");
+      throw new Error("This account is not authorized for Manager. In Supabase, set app_metadata.register_admin to true for this user, then sign out and sign in again.");
     }
     authSession = {
       access_token: result.access_token,
@@ -454,15 +460,13 @@ loginForm.addEventListener("submit", async (event) => {
     mediaInput.disabled = false;
     chooseMediaButton.disabled = false;
     const loaded = await loadSharedRegister();
-    if (!loaded) {
-      authSession = null;
-      mediaAuthorized = false;
-      mediaInput.disabled = true;
-      chooseMediaButton.disabled = true;
-      throw new Error("Could not load the shared register. Check the Supabase API key and table setup, then try again.");
-    }
     prepareEditor();
+    if (!loaded) {
+      editorStatus.textContent = "Signed in, but the shared register could not be loaded. Check Supabase table setup and permissions before saving.";
+      editorStatus.classList.add("is-error");
+    }
     loginForm.reset();
+    loginStatus.textContent = "";
   } catch (error) {
     loginStatus.textContent = error.message || "Unable to sign in.";
     loginStatus.classList.add("is-error");
@@ -631,20 +635,147 @@ editorDialog.addEventListener("close", () => {
   loginForm.reset();
 });
 
-function exportRegisterPdf(data = members, year = eventYear, title = eventTitle) {
-  renderPublicRegister(data, year, title);
-  document.body.classList.add("print-register");
-  window.print();
+function pdfText(value) {
+  const ascii = String(value).normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[₹]/g, "INR").replace(/[–—]/g, "-").replace(/[^\x20-\x7E]/g, "");
+  return `(${ascii.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)")})`;
 }
 
-document.querySelector("#public-export-pdf").addEventListener("click", () => exportRegisterPdf());
-document.querySelector("#export-pdf").addEventListener("click", () =>
-  exportRegisterPdf(editingMembers, eventYear, eventTitle)
+function buildRegisterPdf(data, year, title) {
+  const pageWidth = 842;
+  const pageHeight = 595;
+  const rowsPerPage = 22;
+  const pledged = data.reduce((sum, member) => sum + member.amount, 0);
+  const received = data.reduce((sum, member) => sum + member.received, 0);
+  const pageCount = Math.max(1, Math.ceil(data.length / rowsPerPage));
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+  ];
+  const pageRefs = [];
+  const number = (value) => numberFormat.format(value);
+  const text = (value, x, y, size, color = "0.16 0.15 0.14") =>
+    `BT /F1 ${size} Tf ${color} rg 1 0 0 1 ${x} ${y} Tm ${pdfText(value)} Tj ET`;
+  const rect = (x, y, width, height, color) =>
+    `q ${color} rg ${x} ${y} ${width} ${height} re f Q`;
+
+  for (let pageIndex = 0; pageIndex < pageCount; pageIndex += 1) {
+    const first = pageIndex * rowsPerPage;
+    const pageRows = data.slice(first, first + rowsPerPage);
+    const commands = [
+      rect(0, 0, pageWidth, pageHeight, "0.99 0.98 0.95"),
+      rect(0, 562, pageWidth, 33, "0.46 0.17 0.15"),
+      text("KARKATTA  |  PALAMU, JHARKHAND", 38, 574, 9, "1 0.96 0.87"),
+      text(`${title} MEMBERS REGISTER  |  ${year}`, 38, 538, 19, "0.30 0.13 0.12"),
+      text(`Community contributions  |  Page ${pageIndex + 1} of ${pageCount}`, 38, 520, 9, "0.42 0.39 0.35"),
+    ];
+    const summary = [
+      ["MEMBERS", number(data.length), "0.98 0.94 0.86"],
+      ["TOTAL PLEDGED", `INR ${number(pledged)}`, "0.96 0.91 0.82"],
+      ["RECEIVED", `INR ${number(received)}`, "0.91 0.95 0.90"],
+      [`${year - 1} CARRY-FORWARD`, "INR 2,000", "0.97 0.92 0.90"],
+    ];
+    summary.forEach(([label, value], index) => {
+      const x = 38 + index * 192;
+      commands.push(rect(x, 464, 180, 43, summary[index][2]));
+      commands.push(text(label, x + 10, 490, 7, "0.38 0.34 0.30"));
+      commands.push(text(value, x + 10, 474, 12, "0.30 0.13 0.12"));
+    });
+
+    const columns = [38, 75, 397, 511, 596, 804];
+    const tableTop = 446;
+    const rowHeight = 16;
+    commands.push(rect(38, tableTop - 23, 766, 23, "0.46 0.17 0.15"));
+    [
+      ["NO.", columns[0] + 8],
+      ["MEMBER", columns[1] + 8],
+      ["PLEDGED (INR)", columns[2] + 8],
+      ["PAID", columns[3] + 8],
+      ["RECEIVED (INR)", columns[4] + 8],
+    ].forEach(([label, x]) => commands.push(text(label, x, tableTop - 15, 7, "1 0.97 0.91")));
+
+    pageRows.forEach((member, rowIndex) => {
+      const y = tableTop - 23 - (rowIndex + 1) * rowHeight;
+      commands.push(rect(38, y, 766, rowHeight, rowIndex % 2 === 0 ? "1 1 1" : "1 0.97 0.92"));
+      commands.push(text(String(first + rowIndex + 1), columns[0] + 8, y + 5, 8));
+      commands.push(text(member.name, columns[1] + 8, y + 5, 8));
+      commands.push(text(number(member.amount), columns[2] + 8, y + 5, 8));
+      commands.push(text(member.paid ? "Paid" : "Pending", columns[3] + 8, y + 5, 8, member.paid ? "0.24 0.42 0.30" : "0.48 0.37 0.27"));
+      commands.push(text(number(member.received), columns[4] + 8, y + 5, 8));
+      commands.push(`q 0.87 0.84 0.79 RG 0.4 w ${columns[0]} ${y} m ${columns[5]} ${y} l S Q`);
+    });
+    if (pageIndex === pageCount - 1) {
+      const y = tableTop - 23 - (pageRows.length + 1) * rowHeight;
+      commands.push(rect(38, y, 766, rowHeight, "0.94 0.88 0.75"));
+      commands.push(text("TOTAL", columns[1] + 8, y + 5, 8));
+      commands.push(text(number(pledged), columns[2] + 8, y + 5, 8));
+      commands.push(text(number(received), columns[4] + 8, y + 5, 8));
+    }
+
+    const content = commands.join("\n");
+    const pageObject = 4 + pageIndex * 2;
+    const contentObject = pageObject + 1;
+    pageRefs.push(`${pageObject} 0 R`);
+    objects.push(
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 3 0 R >> >> /Contents ${contentObject} 0 R >>`,
+      `<< /Length ${new TextEncoder().encode(content).length} >>\nstream\n${content}\nendstream`,
+    );
+  }
+  objects[1] = `<< /Type /Pages /Kids [${pageRefs.join(" ")}] /Count ${pageCount} >>`;
+  let documentText = "%PDF-1.4\n";
+  const offsets = [0];
+  objects.forEach((object, index) => {
+    offsets.push(new TextEncoder().encode(documentText).length);
+    documentText += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+  const xrefOffset = new TextEncoder().encode(documentText).length;
+  documentText += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  offsets.slice(1).forEach((offset) => {
+    documentText += `${String(offset).padStart(10, "0")} 00000 n \n`;
+  });
+  documentText += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+  return new Blob([documentText], { type: "application/pdf" });
+}
+
+async function exportRegisterPdf(data = members, year = eventYear, title = eventTitle, statusElement = null) {
+  const fileName = `${title.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "")}-${year}-register.pdf`;
+  const pdf = buildRegisterPdf(data, year, title);
+  const file = new File([pdf], fileName, { type: "application/pdf" });
+  if (navigator.canShare?.({ files: [file] }) && navigator.share) {
+    try {
+      await navigator.share({ files: [file], title: `${title} ${year} register` });
+      if (statusElement) statusElement.textContent = "PDF ready. Choose Save to Files or Downloads from the share menu.";
+    } catch (error) {
+      if (error.name === "AbortError") {
+        if (statusElement) statusElement.textContent = "PDF export canceled.";
+        return;
+      }
+      throw error;
+    }
+    return;
+  }
+  const url = URL.createObjectURL(pdf);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  link.style.display = "none";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  if (statusElement) statusElement.textContent = `Downloaded ${fileName}.`;
+}
+
+const publicPdfStatus = document.querySelector("#public-pdf-status");
+document.querySelector("#public-export-pdf").addEventListener("click", () =>
+  exportRegisterPdf(members, eventYear, eventTitle, publicPdfStatus)
+    .catch((error) => { publicPdfStatus.textContent = error.message || "Unable to export the PDF."; })
 );
-window.addEventListener("afterprint", () => {
-  document.body.classList.remove("print-register");
-  renderPublicRegister();
-});
+document.querySelector("#export-pdf").addEventListener("click", () =>
+  exportRegisterPdf(editingMembers, eventYear, eventTitle, editorStatus)
+    .catch((error) => { editorStatus.textContent = error.message || "Unable to export the PDF."; })
+);
 
 const mediaGrid = document.querySelector("#media-grid");
 const mediaStatus = document.querySelector("#media-status");
