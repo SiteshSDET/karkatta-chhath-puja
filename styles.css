@@ -130,6 +130,8 @@ button { color: inherit; }
 .section-kicker { color: var(--saffron); font-size: 9px; font-weight: 700; letter-spacing: .18em; }
 .section-heading h2 { margin: 7px 0 0; font-family: "Playfair Display", Georgia, serif; font-size: 32px; font-weight: 500; letter-spacing: -.02em; }
 .section-aside { padding-bottom: 5px; color: var(--muted); font-size: 12px; }
+.gallery-year-control { width: 178px; display: grid; gap: 6px; padding: 11px 12px; border: 1px solid #e2d9f0; border-radius: 13px; background: linear-gradient(145deg, #fff, #f8f5ff); color: #665782; font-size: 9px; font-weight: 700; }
+.gallery-year-control .settings-input { height: 36px; border-color: #ded3ed; border-radius: 8px; color: #45366c; font-size: 13px; font-weight: 700; }
 .section-description { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
 .upload-zone {
   min-height: 112px;
@@ -173,8 +175,10 @@ button { color: inherit; }
 .media-card img, .media-card video { display: block; width: 100%; height: 148px; object-fit: cover; background: #eee7dc; }
 .media-name { overflow: hidden; padding: 9px 35px 9px 10px; color: #666158; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .media-file-name { overflow: hidden; padding: 0 10px 9px; color: #9a9287; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.media-year { width: fit-content; margin: 0 10px 9px; padding: 4px 8px; border-radius: 999px; background: #e8e0f6; color: #5c4387; font-size: 9px; font-weight: 800; }
 .media-remove { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; display: grid; place-items: center; border: 0; border-radius: 50%; background: rgba(36, 31, 26, .72); color: white; font-size: 17px; cursor: pointer; }
 .media-remove:hover { background: var(--maroon); }
+.gallery-empty { margin: 18px 0 0; padding: 25px 16px; border: 1px dashed #d9cfe9; border-radius: 13px; background: #ffffff9c; color: #706582; font-size: 12px; text-align: center; }
 
 .register-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 25px 0 19px; }
 .public-register { padding-top: 65px; scroll-margin-top: 24px; }
@@ -286,6 +290,9 @@ button { color: inherit; }
 .manager-panel .member-table tbody tr:nth-child(even) { background: #fffaf4; }
 .manager-panel .member-table tfoot th, .manager-panel .member-table tfoot td { background: #f2e7d9; }
 .media-caption-field { width: min(520px, 100%); display: grid; gap: 6px; margin-top: 16px; color: var(--muted); font-size: 11px; }
+.gallery-manager-controls { width: min(620px, 100%); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
+.gallery-manager-controls label { display: grid; gap: 6px; color: var(--muted); font-size: 10px; font-weight: 700; }
+.gallery-manager-controls .settings-input { border-radius: 9px; }
 .manager-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .manager-actions .search-box { margin-right: auto; }
 .event-year-field { display: grid; gap: 5px; color: var(--muted); font-size: 10px; white-space: nowrap; }
@@ -421,6 +428,7 @@ button { color: inherit; }
 .manager-panel-heading h3 { color: #762c25; }
 .manager-panel[data-manager-panel="member-photos"] .manager-panel-heading h3 { color: #28664d; }
 .manager-panel[data-manager-panel="media"] .manager-panel-heading h3 { color: #5c4387; }
+.manager-panel[data-manager-panel="media"] .gallery-manager-controls { padding: 14px; border: 1px solid #e4dcef; border-radius: 13px; background: #ffffffb8; }
 
 :focus-visible { outline: 3px solid #d89545; outline-offset: 3px; }
 
@@ -455,6 +463,10 @@ button { color: inherit; }
   .section-heading > div:first-child { width: 100%; min-width: 0; padding: 13px 14px; border-radius: 13px; }
   .section-heading h2 { font-size: 25px; }
   .section-aside { max-width: 120px; text-align: right; line-height: 1.4; }
+  .gallery-section .section-heading { align-items: flex-end; gap: 8px; }
+  .gallery-section .section-heading > div:first-child { width: auto; flex: 1 1 auto; }
+  .gallery-year-control { width: 116px; flex: 0 0 116px; padding: 8px; font-size: 8px; }
+  .gallery-year-control .settings-input { height: 35px; padding: 0 7px; }
   .register-heading { align-items: flex-start; flex-direction: column; gap: 14px; }
   .pdf-actions { width: 100%; flex-direction: column; }
   .pdf-actions .button { width: 100%; }
@@ -462,6 +474,7 @@ button { color: inherit; }
   .gallery-cards { grid-template-columns: 1fr; gap: 12px; }
   .gallery-card-copy { padding: 13px 14px 15px; }
   .gallery-card h3 { font-size: 18px; }
+  .gallery-manager-controls { grid-template-columns: 1fr; gap: 9px; }
   .public-register .register-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0; }
   .public-register .summary-card { min-width: 0; min-height: 87px; padding: 11px; border-radius: 12px; }
   .public-register .summary-card strong { font-size: 18px; }
@@ -549,6 +562,7 @@ button { color: inherit; }
   .brand-copy small { font-size: 6px; letter-spacing: .1em; }
   .main-nav { gap: 3px; padding: 3px; }
   .main-nav a, .members-trigger { min-height: 31px; padding: 0 7px; font-size: 10px; }
+  .gallery-year-control { width: 101px; flex-basis: 101px; }
 }
 
 @media print {

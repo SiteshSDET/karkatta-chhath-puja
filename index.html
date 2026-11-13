@@ -114,7 +114,10 @@ Celebrating the beauty of Chhath in Karkatta.</p>
             <span class="section-kicker">MOMENTS TO REMEMBER</span>
             <h2 id="gallery-title">Our celebration</h2>
           </div>
-          <span class="section-aside">Photos &amp; videos from Karkatta</span>
+          <label class="gallery-year-control" for="gallery-year-filter">
+            <span>Year</span>
+            <select id="gallery-year-filter" class="settings-input" aria-label="Show celebration photos and videos by year"></select>
+          </label>
         </div>
         <div id="gallery-cards" class="gallery-cards" aria-live="polite">
           <article class="gallery-card gallery-photo-card">
@@ -130,6 +133,7 @@ Celebrating the beauty of Chhath in Karkatta.</p>
           </article>
         </div>
         <div id="media-grid" class="media-grid" aria-live="polite"></div>
+        <p id="gallery-empty" class="gallery-empty" role="status" hidden>No celebration photos or videos are available for this year yet.</p>
       </section>
     </main>
 
@@ -164,7 +168,7 @@ Celebrating the beauty of Chhath in Karkatta.</p>
           <button class="manager-tab is-active" type="button" data-manager-tab="register" aria-selected="true">Members register</button>
           <button class="manager-tab" type="button" data-manager-tab="settings" aria-selected="false">Site details</button>
           <button class="manager-tab" type="button" data-manager-tab="member-photos" aria-selected="false">Member photos</button>
-          <button class="manager-tab" type="button" data-manager-tab="media" aria-selected="false">Photos &amp; videos</button>
+          <button class="manager-tab" type="button" data-manager-tab="media" aria-selected="false">Gallery by year</button>
         </nav>
         <section class="manager-panel" data-manager-panel="register" aria-labelledby="register-panel-title">
           <div class="manager-panel-heading">
@@ -245,7 +249,17 @@ Celebrating the beauty of Chhath in Karkatta.</p>
         </section>
         <section class="manager-panel" data-manager-panel="media" aria-labelledby="media-panel-title" hidden>
           <div class="manager-panel-heading">
-            <div><h3 id="media-panel-title">Manage photos &amp; videos</h3><p>Upload photos or videos to the shared gallery. The size limit is set by your Supabase project.</p></div>
+            <div><h3 id="media-panel-title">Manage photos &amp; videos by year</h3><p>Choose the celebration year for new uploads, or filter existing gallery media by year. New years appear on the public gallery after the first upload.</p></div>
+          </div>
+          <div class="gallery-manager-controls">
+            <label>Year for new uploads
+              <input id="media-upload-year" class="settings-input" type="number" min="2026" max="9999" step="1" value="2026">
+            </label>
+            <label>Manage gallery year
+              <select id="manager-gallery-year-filter" class="settings-input" aria-label="Filter manager gallery media by year">
+                <option value="all">All years</option>
+              </select>
+            </label>
           </div>
           <div id="drop-zone" class="upload-zone">
             <input id="media-input" class="visually-hidden" type="file" accept="image/*,video/*" multiple disabled>

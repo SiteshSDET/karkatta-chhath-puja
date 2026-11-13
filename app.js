@@ -151,6 +151,7 @@ function validGalleryMedia(value) {
     typeof item.path === "string" &&
     typeof item.type === "string" &&
     (item.caption === undefined || typeof item.caption === "string") &&
+    (item.year === undefined || (isValidYear(item.year) && item.year >= BASE_YEAR)) &&
     (item.type.startsWith("image/") || item.type.startsWith("video/"))
   );
 }
@@ -1328,6 +1329,11 @@ document.querySelector("#manager-download-pdf").addEventListener("click", () => 
 const mediaGrid = document.querySelector("#media-grid");
 const mediaStatus = document.querySelector("#media-status");
 const managerMediaGrid = document.querySelector("#manager-media-grid");
+const galleryYearFilter = document.querySelector("#gallery-year-filter");
+const galleryCards = document.querySelector("#gallery-cards");
+const galleryEmpty = document.querySelector("#gallery-empty");
+const mediaUploadYear = document.querySelector("#media-upload-year");
+const managerGalleryYearFilter = document.querySelector("#manager-gallery-year-filter");
 mediaInput.disabled = true;
 memberPhotoInput.disabled = true;
 heroPhotoInput.disabled = true;
@@ -1520,6 +1526,12 @@ function createMediaCard(item, manager = false) {
   name.className = "media-name";
   name.textContent = item.caption || item.name;
   card.append(preview, name);
+  if (manager) {
+    const year = document.createElement("div");
+    year.className = "media-year";
+    year.textContent = String(item.year || BASE_YEAR);
+    card.append(year);
+  }
   if (item.caption) {
     const fileName = document.createElement("div");
     fileName.className = "media-file-name";
@@ -1540,9 +1552,36 @@ function createMediaCard(item, manager = false) {
 }
 
 function renderGalleryMedia() {
-  mediaGrid.replaceChildren(...galleryMedia.map((item) => createMediaCard(item)));
-  managerMediaGrid.replaceChildren(...galleryMedia.map((item) => createMediaCard(item, true)));
+  const years = [...new Set([BASE_YEAR, ...galleryMedia.map((item) => item.year || BASE_YEAR)])]
+    .sort((left, right) => right - left);
+  const currentPublicYear = Number(galleryYearFilter.value) || BASE_YEAR;
+  const currentManagerYear = managerGalleryYearFilter.value || "all";
+  galleryYearFilter.replaceChildren(...years.map((year) => {
+    const option = document.createElement("option");
+    option.value = String(year);
+    option.textContent = String(year);
+    return option;
+  }));
+  managerGalleryYearFilter.replaceChildren(
+    new Option("All years", "all"),
+    ...years.map((year) => new Option(String(year), String(year)))
+  );
+  galleryYearFilter.value = years.includes(currentPublicYear) ? String(currentPublicYear) : String(BASE_YEAR);
+  managerGalleryYearFilter.value = years.some((year) => String(year) === currentManagerYear) ? currentManagerYear : "all";
+  const selectedYear = Number(galleryYearFilter.value);
+  const publicMedia = galleryMedia.filter((item) => (item.year || BASE_YEAR) === selectedYear);
+  const managedMedia = galleryMedia.filter((item) =>
+    managerGalleryYearFilter.value === "all" || (item.year || BASE_YEAR) === Number(managerGalleryYearFilter.value)
+  );
+  galleryCards.hidden = selectedYear !== BASE_YEAR;
+  mediaGrid.replaceChildren(...publicMedia.map((item) => createMediaCard(item)));
+  managerMediaGrid.replaceChildren(...managedMedia.map((item) => createMediaCard(item, true)));
+  galleryEmpty.hidden = selectedYear === BASE_YEAR || publicMedia.length > 0;
+  galleryEmpty.textContent = `No celebration photos or videos are available for ${selectedYear} yet.`;
 }
+
+galleryYearFilter.addEventListener("change", renderGalleryMedia);
+managerGalleryYearFilter.addEventListener("change", renderGalleryMedia);
 
 async function removeGalleryMedia(item) {
   if (!supportsSharedSiteSettings) {
@@ -1580,6 +1619,13 @@ async function addMediaFiles(files) {
   if (!supportsSharedSiteSettings) {
     throw new Error("Run the updated supabase-setup.sql before managing shared gallery media.");
   }
+  const year = Number(mediaUploadYear.value);
+  if (!Number.isInteger(year) || year < BASE_YEAR || year > 9999) {
+    mediaUploadYear.setCustomValidity(`Enter a year from ${BASE_YEAR} to 9999.`);
+    mediaUploadYear.reportValidity();
+    mediaUploadYear.setCustomValidity("");
+    throw new Error(`Choose a valid gallery year from ${BASE_YEAR} to 9999.`);
+  }
   let added = 0;
   for (const file of files) {
     if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
@@ -1594,7 +1640,7 @@ async function addMediaFiles(files) {
       mediaStatus.textContent = `Uploading ${file.name}… ${Math.floor(sent / total * 100)}%`;
     });
     const caption = mediaCaptionInput.value.trim();
-    const item = { id: path, name: file.name, type: file.type, path, caption };
+    const item = { id: path, name: file.name, type: file.type, path, caption, year };
     const previousMedia = galleryMedia;
     galleryMedia = [...galleryMedia, item];
     try {
