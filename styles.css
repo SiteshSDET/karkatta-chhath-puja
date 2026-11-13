@@ -116,7 +116,7 @@ button { color: inherit; }
 .member-initials { z-index: 1; color: #fff9ec; font-family: "Playfair Display", Georgia, serif; font-size: 41px; text-shadow: 0 2px 12px #44251e66; }
 .member-photo-mark { position: absolute; z-index: 2; right: 9px; bottom: 8px; width: 27px; height: 27px; display: grid; place-items: center; border: 1px solid #ffffff99; border-radius: 50%; background: #532c32b5; color: #fff4d9; font-size: 13px; }
 .member-card-copy { min-height: 57px; padding: 9px 10px 10px; }
-.member-card-copy { display: flex; align-items: center; }
+.member-card-copy { display: flex; align-items: center; justify-content: center; text-align: center; }
 .member-card-copy strong { min-width: 0; overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .gallery-section { padding-top: 67px; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
