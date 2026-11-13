@@ -109,6 +109,9 @@ button { color: inherit; }
 .section-kicker { color: var(--saffron); font-size: 9px; font-weight: 700; letter-spacing: .18em; }
 .section-heading h2 { margin: 7px 0 0; font-family: "Playfair Display", Georgia, serif; font-size: 32px; font-weight: 500; letter-spacing: -.02em; }
 .section-aside { padding-bottom: 5px; color: var(--muted); font-size: 12px; }
+.gallery-empty { min-height: 120px; padding: 22px; display: flex; align-items: center; gap: 14px; border: 1px solid var(--line); border-radius: 10px; background: #fffdf9; }
+.gallery-empty p { margin: 0; color: var(--muted); font-size: 12px; }
+.gallery-empty .upload-icon { flex: 0 0 44px; font-size: 24px; }
 
 .upload-zone {
   min-height: 112px;
@@ -146,10 +149,6 @@ button { color: inherit; }
 .media-remove { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; display: grid; place-items: center; border: 0; border-radius: 50%; background: rgba(36, 31, 26, .72); color: white; font-size: 17px; cursor: pointer; }
 .media-remove:hover { background: var(--maroon); }
 
-.members-section { padding-top: 70px; scroll-margin-top: 24px; }
-.members-heading { align-items: end; }
-.section-description { margin: 8px 0 0; color: var(--muted); font-size: 12px; }
-.register-actions { display: flex; gap: 9px; }
 .register-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 25px 0 19px; }
 .summary-card { min-height: 105px; padding: 16px 18px; display: grid; align-content: start; gap: 4px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 .summary-card > span { color: var(--muted); font-size: 10px; }
@@ -158,7 +157,6 @@ button { color: inherit; }
 .summary-card-accent { border-color: #ead9bd; background: #fffaf1; }
 .summary-card-accent strong { color: var(--maroon); }
 
-.table-toolbar { min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
 .search-box { width: min(300px, 100%); height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
 .search-box svg { width: 16px; height: 16px; fill: none; stroke: #8b867d; stroke-width: 1.6; stroke-linecap: round; }
 .search-box input { width: 100%; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: 11px; }
@@ -196,11 +194,11 @@ button { color: inherit; }
 .register-footnote { margin: 12px 0 0; color: #8b867d; font-size: 10px; }
 
 .member-editor {
-  width: min(1050px, calc(100% - 32px));
+  width: min(1100px, calc(100% - 32px));
   max-width: none;
   max-height: min(88vh, 900px);
   padding: 24px;
-  overflow: hidden;
+  overflow: auto;
   border: 1px solid #e5d4b8;
   border-radius: 12px;
   background: var(--paper);
@@ -215,15 +213,23 @@ button { color: inherit; }
 .admin-login label input { height: 38px; padding: 0 10px; border: 1px solid #dfd6c9; border-radius: 5px; background: #fff; color: var(--ink); }
 .admin-login label input:focus { border-color: #c99458; outline: 2px solid #c9945822; }
 .admin-login .editor-actions { justify-content: flex-end; margin-top: 16px; }
-.editor-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 12px; }
-.editor-heading h2 { margin: 5px 0 0; font-family: "Playfair Display", Georgia, serif; font-size: 26px; font-weight: 500; }
+.manager-heading, .manager-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.manager-heading h2 { margin: 5px 0 0; font-family: "Playfair Display", Georgia, serif; font-size: 26px; font-weight: 500; }
+.manager-heading-actions { display: flex; gap: 8px; }
+.manager-tabs { display: flex; gap: 8px; margin: 19px 0 16px; border-bottom: 1px solid var(--line); }
+.manager-tab { padding: 10px 13px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; }
+.manager-tab.is-active { border-bottom-color: var(--maroon); color: var(--maroon); }
+.manager-panel-heading h3 { margin: 0; font-family: "Playfair Display", Georgia, serif; font-size: 20px; font-weight: 500; }
+.manager-panel-heading p { margin: 6px 0 0; color: var(--muted); font-size: 11px; }
+.manager-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.manager-actions .search-box { margin-right: auto; }
 .event-year-field { display: grid; gap: 5px; color: var(--muted); font-size: 10px; white-space: nowrap; }
 .event-year-field input { width: 100px; height: 36px; border-color: #dfd6c9; background: #fff; font-size: 13px; }
 .editor-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .editor-status { margin: 0 0 12px; color: var(--green); font-size: 11px; }
 .editor-status.is-error { color: #a63d30; }
-.editor-table-scroll { max-height: calc(88vh - 155px); overflow: auto; }
-.editor-table { min-width: 700px; }
+.editor-table-scroll { max-height: min(55vh, 560px); overflow: auto; }
+.editor-table { min-width: 0; }
 .editor-table thead { position: sticky; top: 0; z-index: 1; }
 .editor-table tfoot { position: sticky; bottom: 0; }
 
@@ -245,21 +251,49 @@ button { color: inherit; }
   .content-section { width: calc(100% - 36px); }
   .gallery-section { padding-top: 48px; }
   .section-heading h2 { font-size: 28px; }
-  .upload-zone { grid-template-columns: 42px 1fr; padding: 18px; gap: 12px; }
+  .member-editor { width: calc(100% - 16px); max-height: 96vh; padding: 13px; }
+  .manager-heading { align-items: flex-start; }
+  .manager-heading h2 { font-size: 22px; }
+  .manager-heading-actions { gap: 5px; }
+  .manager-heading-actions .button { min-height: 34px; padding: 0 9px; font-size: 10px; }
+  .manager-tabs { gap: 0; }
+  .manager-tab { flex: 1; padding: 10px 5px; font-size: 11px; }
+  .manager-panel-heading { align-items: flex-start; }
+  .manager-panel-heading h3 { font-size: 18px; }
+  .register-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin: 13px 0; }
+  .summary-card { min-height: 86px; padding: 11px; }
+  .summary-card strong { font-size: 19px; }
+  .manager-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .manager-actions .search-box { width: 100%; grid-column: 1 / -1; }
+  .manager-actions .button { padding: 0 8px; }
+  .event-year-field { white-space: normal; }
+  .event-year-field input { width: 88px; }
+  .upload-zone { grid-template-columns: 40px minmax(0, 1fr); padding: 14px; gap: 10px; }
   .upload-zone .button { grid-column: 2; justify-self: start; }
   .upload-note { grid-column: 1 / -1; margin: 0; }
-  .members-section { padding-top: 54px; }
-  .members-heading { align-items: start; flex-direction: column; }
-  .register-actions { width: 100%; }
-  .member-editor { padding: 18px; }
-  .editor-heading { align-items: start; flex-direction: column; }
-  .editor-actions { width: 100%; }
-  .editor-actions .button { flex: 1; }
-  .register-summary { grid-template-columns: repeat(2, 1fr); }
-  .table-toolbar { align-items: start; flex-direction: column; padding: 6px 0; }
+  .editor-table-scroll { max-height: 55vh; overflow: visible; border: 0; }
+  .editor-table { display: block; width: 100%; }
+  .editor-table thead { display: none; }
+  .editor-table tbody { display: grid; gap: 9px; }
+  .editor-table tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 9px; border: 1px solid var(--line); border-radius: 7px; background: #fff; }
+  .editor-table tbody td { height: auto; min-width: 0; padding: 0; display: grid; gap: 3px; border: 0; text-align: left !important; }
+  .editor-table tbody td::before { content: attr(data-label); color: var(--muted); font-size: 9px; }
+  .editor-table tbody td:first-child { display: none; }
+  .editor-table .member-input { min-width: 0; height: 34px; padding: 0 5px; border-color: #e4ddd2; background: #fff; font-size: 12px; }
+  .editor-table .member-input.name-input { min-width: 0; }
+  .editor-table .paid-cell { justify-items: start; }
+  .editor-table .remove-cell { display: flex; justify-content: flex-end; }
+  .editor-table .remove-cell::before { display: none; }
+  .editor-table tfoot { display: block; position: static; margin-top: 8px; }
+  .editor-table tfoot tr { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .editor-table tfoot th, .editor-table tfoot td { height: auto; min-width: 0; padding: 9px; border-radius: 5px; }
+  .editor-table tfoot th, .editor-table tfoot td:nth-child(4), .editor-table tfoot td:nth-child(6) { display: none; }
+  .editor-table tfoot td:nth-child(3), .editor-table tfoot td:nth-child(5) { display: flex; justify-content: space-between; text-align: right; }
+  .editor-table tfoot td:nth-child(3)::before { content: "Pledged"; }
+  .editor-table tfoot td:nth-child(5)::before { content: "Received"; }
   .search-box { width: 100%; }
-  .table-scroll { margin-right: -1px; }
-  .member-table { min-width: 650px; }
+  .member-table:not(.editor-table) { min-width: 0; }
+  .gallery-empty { min-height: 96px; padding: 14px; }
   .site-footer { width: calc(100% - 36px); min-height: 82px; margin-top: 54px; }
 }
 
@@ -272,14 +306,14 @@ button { color: inherit; }
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .site-header, .hero, .gallery-section, .site-footer, .members-heading .register-actions,
-  .table-toolbar, .remove-column, .remove-cell, .remove-row, .register-footnote,
-  .member-editor { display: none !important; }
-  .members-section { display: block !important; width: 100%; padding: 0; }
-  .members-heading { display: block; margin-bottom: 12px; }
-  .members-heading > div:first-child::before { content: "KARKATTA · PALAMU, JHARKHAND"; display: block; margin-bottom: 5px; color: #762c25; font-size: 9px; font-weight: 700; letter-spacing: .15em; }
-  .members-heading h2 { margin: 0; font-size: 23px; }
-  .section-kicker, .section-description { display: none; }
+  body > *:not(#member-editor) { display: none !important; }
+  #member-editor:not([open]) { display: none !important; }
+  .member-editor { position: static; inset: auto; width: 100%; max-width: none; max-height: none; margin: 0; padding: 0; overflow: visible; border: 0; border-radius: 0; box-shadow: none; }
+  .manager-heading, .manager-tabs, .manager-panel[data-manager-panel="media"], .event-year-field, .manager-actions, .editor-status, .register-footnote { display: none !important; }
+  .manager-panel[data-manager-panel="register"] { display: block !important; }
+  .manager-panel-heading { display: block; margin-bottom: 9px; }
+  .manager-panel-heading::before { content: "KARKATTA · PALAMU, JHARKHAND"; display: block; margin-bottom: 5px; color: #762c25; font-size: 9px; font-weight: 700; letter-spacing: .15em; }
+  .manager-panel-heading h3 { color: #762c25; font-size: 22px; }
   .register-summary { grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0; }
   .summary-card { min-height: 0; padding: 7px 9px; border-color: #e5d4b8; background: #fff6e8 !important; }
   .summary-card:nth-child(2) { background: #f9edda !important; }
@@ -287,10 +321,16 @@ button { color: inherit; }
   .summary-card:nth-child(4) { border-color: #dfc5c1; background: #f8ecea !important; }
   .summary-card > span, .summary-card small { color: #59534b; }
   .summary-card strong { font-size: 15px; }
-  .table-scroll { overflow: visible; border: 0; }
+  .table-scroll, .editor-table-scroll { max-height: none; overflow: visible; border: 0; }
+  .remove-column, .remove-cell, .remove-row { display: none !important; }
   .member-table { width: 100%; min-width: 0; font-size: 8px; }
   .member-table th, .member-table td { height: 24px; padding: 2px 6px; border-color: #ddd; }
-  .member-table thead { display: table-header-group; }
+  .editor-table thead { display: table-header-group; position: static; }
+  .editor-table tbody, .editor-table tbody tr { display: table-row-group; }
+  .editor-table tbody tr { display: table-row; }
+  .editor-table tbody td { display: table-cell; }
+  .editor-table tbody td::before { content: none; }
+  .editor-table tbody td:first-child { display: table-cell; }
   .member-table thead th { background: #762c25 !important; color: #fffaf0 !important; }
   .member-table tfoot th, .member-table tfoot td { background: #f1dfbf !important; color: #4a211e; }
   .member-table tbody tr:nth-child(even) { background: #fff7ea !important; }

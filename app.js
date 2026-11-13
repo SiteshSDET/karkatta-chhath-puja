@@ -64,9 +64,7 @@ const ORIGINAL_MEMBERS = [
 }));
 
 const membersTrigger = document.querySelector("#members-trigger");
-const memberRows = document.querySelector("#member-rows");
 const memberSearch = document.querySelector("#member-search");
-const saveStatus = document.querySelector("#save-status");
 const editorDialog = document.querySelector("#member-editor");
 const editorRows = document.querySelector("#editor-rows");
 const editorStatus = document.querySelector("#editor-status");
@@ -77,19 +75,17 @@ const closeLoginButton = document.querySelector("#close-login");
 const eventYearInput = document.querySelector("#event-year");
 const addMemberButton = document.querySelector("#add-member");
 const saveMembersButton = document.querySelector("#save-members");
-const closeEditorButton = document.querySelector("#close-editor");
 const dropZone = document.querySelector("#drop-zone");
 const mediaInput = document.querySelector("#media-input");
+const chooseMediaButton = document.querySelector("#choose-media");
+const managerSignoutButton = document.querySelector("#manager-signout");
 const numberFormat = new Intl.NumberFormat("en-IN");
 const BASE_YEAR = 2026;
 const loadedRegister = loadRegister();
 let members = loadedRegister.members;
 let eventYear = loadedRegister.year;
-let memberClicks = 0;
-let mediaClicks = 0;
 let editingMembers = [];
 let authSession = null;
-let loginPurpose = "register";
 let mediaAuthorized = false;
 
 function isValidYear(value) {
@@ -131,8 +127,10 @@ function loadRegister() {
 }
 
 function setSaveStatus(message, isError = false) {
-  saveStatus.textContent = message;
-  saveStatus.classList.toggle("is-error", isError);
+  if (!editorContent.hidden) {
+    editorStatus.textContent = message;
+    editorStatus.classList.toggle("is-error", isError);
+  }
 }
 
 function saveLocalRegister(value, year) {
@@ -191,7 +189,7 @@ async function loadSharedRegister() {
     eventYear = register.event_year;
     saveLocalRegister(members, eventYear);
     applyEventYear();
-    renderMembers();
+    renderEditor();
     setSaveStatus("Shared register loaded");
     return true;
   } catch (error) {
@@ -241,63 +239,29 @@ function createInput(member, field, type, className) {
   return input;
 }
 
-function renderMembers() {
-  const filter = memberSearch.value.trim().toLocaleLowerCase();
-  const visibleMembers = members.filter((member) => member.name.toLocaleLowerCase().includes(filter));
-  const fragment = document.createDocumentFragment();
-
-  visibleMembers.forEach((member) => {
-    const row = document.createElement("tr");
-
-    const indexCell = document.createElement("td");
-    indexCell.textContent = String(members.indexOf(member) + 1);
-    row.append(indexCell);
-
-    const nameCell = document.createElement("td");
-    nameCell.textContent = member.name;
-    row.append(nameCell);
-
-    const amountCell = document.createElement("td");
-    amountCell.textContent = numberFormat.format(member.amount);
-    row.append(amountCell);
-
-    const paidCell = document.createElement("td");
-    paidCell.className = "paid-cell";
-    paidCell.textContent = member.paid ? "Paid" : "Pending";
-    row.append(paidCell);
-
-    const receivedCell = document.createElement("td");
-    receivedCell.textContent = numberFormat.format(member.received);
-    row.append(receivedCell);
-
-    const removeCell = document.createElement("td");
-    removeCell.className = "remove-cell";
-    row.append(removeCell);
-
-    fragment.append(row);
-  });
-
-  memberRows.replaceChildren(fragment);
-  updateTotals();
-}
-
 function renderEditor() {
   const fragment = document.createDocumentFragment();
+  const filter = memberSearch.value.trim().toLocaleLowerCase();
   editingMembers.forEach((member, index) => {
+    if (!member.name.toLocaleLowerCase().includes(filter)) return;
     const row = document.createElement("tr");
     const indexCell = document.createElement("td");
+    indexCell.dataset.label = "No.";
     indexCell.textContent = String(index + 1);
     row.append(indexCell);
 
     const nameCell = document.createElement("td");
+    nameCell.dataset.label = "Member";
     nameCell.append(createInput(member, "name", "text", "name-input"));
     row.append(nameCell);
 
     const amountCell = document.createElement("td");
+    amountCell.dataset.label = "Pledged (₹)";
     amountCell.append(createInput(member, "amount", "number", "amount-input"));
     row.append(amountCell);
 
     const paidCell = document.createElement("td");
+    paidCell.dataset.label = "Paid";
     paidCell.className = "paid-cell";
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
@@ -310,11 +274,13 @@ function renderEditor() {
     row.append(paidCell);
 
     const receivedCell = document.createElement("td");
+    receivedCell.dataset.label = "Received (₹)";
     receivedCell.append(createInput(member, "received", "number", "amount-input"));
     row.append(receivedCell);
 
     const removeCell = document.createElement("td");
     removeCell.className = "remove-cell";
+    removeCell.dataset.label = "Remove";
     const removeButton = document.createElement("button");
     removeButton.type = "button";
     removeButton.className = "remove-row";
@@ -327,16 +293,15 @@ function renderEditor() {
   });
   editorRows.replaceChildren(fragment);
   renderEditorTotals();
+  updateRegisterSummary();
 }
 
-function updateTotals() {
-  const pledged = members.reduce((total, member) => total + member.amount, 0);
-  const received = members.reduce((total, member) => total + member.received, 0);
-  document.querySelector("#member-total").textContent = numberFormat.format(members.length);
+function updateRegisterSummary() {
+  const pledged = editingMembers.reduce((total, member) => total + member.amount, 0);
+  const received = editingMembers.reduce((total, member) => total + member.received, 0);
+  document.querySelector("#member-total").textContent = numberFormat.format(editingMembers.length);
   document.querySelector("#pledged-total").textContent = `₹${numberFormat.format(pledged)}`;
   document.querySelector("#received-total").textContent = `₹${numberFormat.format(received)}`;
-  document.querySelector("#table-pledged").textContent = `₹${numberFormat.format(pledged)}`;
-  document.querySelector("#table-received").textContent = `₹${numberFormat.format(received)}`;
 }
 
 function applyEventYear() {
@@ -345,8 +310,7 @@ function applyEventYear() {
   document.querySelector("#brand-event-year").textContent = `KARKATTA · ${eventYear}`;
   document.querySelector("#hero-year").textContent = String(eventYear);
   document.querySelector("#hero-event-year").textContent = String(eventYear);
-  document.querySelector("#members-title").textContent = `Members register · ${eventYear}`;
-  document.querySelector("#editor-title").textContent = `Edit members register · ${eventYear}`;
+  document.querySelector("#register-panel-title").textContent = `Members register · ${eventYear}`;
   document.querySelector("#carry-forward-label").textContent = `${eventYear - 1} carry-forward`;
   document.querySelector("#carry-forward-note").textContent = `not included in ${eventYear} totals`;
   document.querySelector(".register-footnote").textContent = `Source: attached Chhath Puja ${eventYear} register. The ${eventYear - 1} fund balance is shown separately.`;
@@ -354,9 +318,10 @@ function applyEventYear() {
 }
 
 function openEditor() {
-  loginPurpose = "register";
-  loginForm.dataset.purpose = "register";
   const signedIn = authSession && authSession.expires_at > Date.now() / 1000;
+  mediaAuthorized = Boolean(signedIn);
+  mediaInput.disabled = !mediaAuthorized;
+  chooseMediaButton.disabled = !mediaAuthorized;
   loginForm.hidden = Boolean(signedIn);
   editorContent.hidden = !signedIn;
   loginStatus.textContent = "";
@@ -375,10 +340,7 @@ function prepareEditor() {
 }
 
 membersTrigger.addEventListener("click", () => {
-  memberClicks = Math.min(memberClicks + 1, 9);
-  if (memberClicks === 9) {
-    openEditor();
-  }
+  openEditor();
 });
 
 loginForm.addEventListener("submit", async (event) => {
@@ -388,7 +350,6 @@ loginForm.addEventListener("submit", async (event) => {
   loginStatus.textContent = "Signing in…";
   loginStatus.classList.remove("is-error");
   try {
-    loginPurpose = loginForm.dataset.purpose || "register";
     const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method: "POST",
       headers: {
@@ -415,25 +376,19 @@ loginForm.addEventListener("submit", async (event) => {
       access_token: result.access_token,
       expires_at: result.expires_at || Math.floor(Date.now() / 1000) + result.expires_in,
     };
-    if (loginPurpose === "media") {
-      mediaAuthorized = true;
-      mediaInput.disabled = false;
-      dropZone.hidden = false;
-      loginStatus.textContent = "";
-      editorDialog.close();
-      loginForm.dataset.purpose = "register";
-      mediaStatus.textContent = "Admin verified. Select Choose files again to pick media; previews are local to this device.";
-      return;
-    } else {
-      const loaded = await loadSharedRegister();
-      if (!loaded) {
-        authSession = null;
-        throw new Error("Could not load the shared register. Check the Supabase API key and table setup, then try again.");
-      }
+    mediaAuthorized = true;
+    mediaInput.disabled = false;
+    chooseMediaButton.disabled = false;
+    const loaded = await loadSharedRegister();
+    if (!loaded) {
+      authSession = null;
+      mediaAuthorized = false;
+      mediaInput.disabled = true;
+      chooseMediaButton.disabled = true;
+      throw new Error("Could not load the shared register. Check the Supabase API key and table setup, then try again.");
     }
     prepareEditor();
     loginForm.reset();
-    loginForm.dataset.purpose = "register";
   } catch (error) {
     loginStatus.textContent = error.message || "Unable to sign in.";
     loginStatus.classList.add("is-error");
@@ -464,6 +419,7 @@ editorRows.addEventListener("input", (event) => {
   editorStatus.textContent = "Unsaved changes";
   editorStatus.classList.remove("is-error");
   renderEditorTotals();
+  updateRegisterSummary();
 });
 
 eventYearInput.addEventListener("input", () => {
@@ -496,9 +452,10 @@ editorRows.addEventListener("click", (event) => {
   editorStatus.textContent = "Unsaved changes";
 });
 
-memberSearch.addEventListener("input", renderMembers);
+memberSearch.addEventListener("input", renderEditor);
 
 addMemberButton.addEventListener("click", () => {
+  memberSearch.value = "";
   const id = `member-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   editingMembers.push({ id, name: "", amount: 0, paid: false, received: 0 });
   renderEditor();
@@ -541,17 +498,37 @@ saveMembersButton.addEventListener("click", async () => {
   members = editingMembers.map((member) => ({ ...member }));
   eventYear = nextYear;
   applyEventYear();
-  renderMembers();
+  renderEditor();
   editorStatus.textContent = "Changes saved successfully for everyone.";
   editorStatus.classList.remove("is-error");
   setSaveStatus("Shared register updated successfully.");
 });
 
-closeEditorButton.addEventListener("click", () => editorDialog.close());
 closeLoginButton.addEventListener("click", () => editorDialog.close());
+document.querySelector("#close-manager").addEventListener("click", () => editorDialog.close());
+managerSignoutButton.addEventListener("click", () => {
+  authSession = null;
+  mediaAuthorized = false;
+  mediaInput.disabled = true;
+  chooseMediaButton.disabled = true;
+  loginForm.reset();
+  loginForm.hidden = false;
+  editorContent.hidden = true;
+  loginStatus.textContent = "You have signed out.";
+});
+document.querySelectorAll("[data-manager-tab]").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll("[data-manager-tab]").forEach((item) => {
+      const active = item === tab;
+      item.classList.toggle("is-active", active);
+      item.setAttribute("aria-selected", String(active));
+    });
+    document.querySelectorAll("[data-manager-panel]").forEach((panel) => {
+      panel.hidden = panel.dataset.managerPanel !== tab.dataset.managerTab;
+    });
+  });
+});
 editorDialog.addEventListener("close", () => {
-  memberClicks = 0;
-  loginForm.dataset.purpose = "register";
   loginForm.reset();
 });
 
@@ -569,14 +546,9 @@ document.querySelector("#choose-media").addEventListener("click", () => {
   if (!mediaAuthorized || !authSession || authSession.expires_at <= Date.now() / 1000) {
     mediaAuthorized = false;
     mediaInput.disabled = true;
-    mediaClicks = Math.min(mediaClicks + 1, 9);
-    if (mediaClicks < 9) return;
-    loginPurpose = "media";
-    loginForm.hidden = false;
-    editorContent.hidden = true;
-    loginStatus.textContent = "";
-    loginForm.dataset.purpose = "media";
-    editorDialog.showModal();
+    chooseMediaButton.disabled = true;
+    mediaStatus.textContent = "Your admin session has expired. Sign in again to manage media.";
+    mediaStatus.classList.add("is-error");
     return;
   }
   mediaInput.click();
@@ -615,18 +587,25 @@ function addMediaFiles(files) {
     const name = document.createElement("div");
     name.className = "media-name";
     name.textContent = file.name;
+    card.append(preview, name);
+    const managerCard = card.cloneNode(true);
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "media-remove";
     remove.setAttribute("aria-label", `Remove ${file.name}`);
     remove.textContent = "×";
-    remove.addEventListener("click", () => {
+    const removeMedia = () => {
       URL.revokeObjectURL(url);
       mediaUrls.delete(url);
       card.remove();
-    });
-    card.append(preview, name, remove);
+      managerCard.remove();
+      document.querySelector(".gallery-empty").hidden = mediaGrid.children.length > 0;
+    };
+    remove.addEventListener("click", removeMedia);
+    managerCard.append(remove);
     mediaGrid.append(card);
+    document.querySelector("#manager-media-grid").append(managerCard);
+    document.querySelector(".gallery-empty").hidden = true;
     added += 1;
   }
   if (added > 0) {
@@ -656,7 +635,6 @@ window.addEventListener("beforeunload", () => {
   for (const url of mediaUrls) URL.revokeObjectURL(url);
 });
 
-renderMembers();
 applyEventYear();
 loadSharedRegister();
 

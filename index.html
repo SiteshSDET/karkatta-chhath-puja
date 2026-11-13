@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#762c25">
     <meta name="description" content="The Karkatta Chhath Puja community page, photo gallery and member contribution register.">
     <title id="page-title">Chhath Puja 2026 · Karkatta</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20261113">
   </head>
   <body>
     <header class="site-header">
@@ -22,7 +22,7 @@
       <nav class="main-nav" aria-label="Main navigation">
         <a href="#gallery">Gallery</a>
         <button id="members-trigger" class="members-trigger" type="button" aria-controls="member-editor">
-          Members
+          Manager
         </button>
       </nav>
     </header>
@@ -65,92 +65,11 @@
           </div>
           <span class="section-aside">Photos &amp; videos</span>
         </div>
-        <div id="drop-zone" class="upload-zone">
-          <input id="media-input" class="visually-hidden" type="file" accept="image/*,video/*" multiple disabled>
-          <span class="upload-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14.5v3A2.5 2.5 0 0 0 7.5 20h9a2.5 2.5 0 0 0 2.5-2.5v-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-          <div class="upload-copy">
-            <strong>Bring the celebration to life</strong>
-            <span>Choose photos or videos, or drag them here</span>
-          </div>
-          <button id="choose-media" class="button button-outline" type="button">Choose files</button>
-          <p id="media-status" class="upload-note" role="status" aria-live="polite">Photo and video selection requires an authorized admin sign-in. Previews are local to this device.</p>
+        <div class="gallery-empty">
+          <span class="upload-icon" aria-hidden="true">☼</span>
+          <p>Photos and videos from our celebration will appear here.</p>
         </div>
         <div id="media-grid" class="media-grid" aria-live="polite"></div>
-      </section>
-
-      <section id="members-section" class="content-section members-section" aria-labelledby="members-title">
-        <div class="section-heading members-heading">
-          <div>
-            <span class="section-kicker">COMMUNITY CONTRIBUTIONS</span>
-            <h2 id="members-title">Members register · 2026</h2>
-            <p class="section-description">The register is always visible.</p>
-          </div>
-          <div class="register-actions">
-            <button id="export-pdf" class="button button-primary" type="button">
-              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v9m0 0 3-3m-3 3L7 9M4 13v3h12v-3"/></svg>
-              Export PDF
-            </button>
-          </div>
-        </div>
-
-        <div class="register-summary" aria-label="Contribution totals">
-          <article class="summary-card">
-            <span>Members</span>
-            <strong id="member-total">52</strong>
-            <small>in the register</small>
-          </article>
-          <article class="summary-card">
-            <span>Total pledged</span>
-            <strong id="pledged-total">₹9,107</strong>
-            <small>as recorded</small>
-          </article>
-          <article class="summary-card summary-card-accent">
-            <span>Received</span>
-            <strong id="received-total">₹3,407</strong>
-            <small>contributions collected</small>
-          </article>
-          <article class="summary-card">
-            <span id="carry-forward-label">2025 carry-forward</span>
-            <strong>₹2,000</strong>
-            <small id="carry-forward-note">not included in totals</small>
-          </article>
-        </div>
-
-        <div class="table-toolbar">
-          <label class="search-box">
-            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.7" cy="8.7" r="5.7"/><path d="m13 13 4 4"/></svg>
-            <input id="member-search" type="search" placeholder="Find a member" autocomplete="off">
-          </label>
-          <span id="save-status" class="save-status" role="status" aria-live="polite">Register ready</span>
-        </div>
-
-        <div class="table-scroll">
-          <table class="member-table">
-            <thead>
-              <tr>
-                <th scope="col" class="number-column">No.</th>
-                <th scope="col">Member</th>
-                <th scope="col" class="amount-column">Pledged (₹)</th>
-                <th scope="col" class="paid-column">Paid</th>
-                <th scope="col" class="amount-column">Received (₹)</th>
-                <th scope="col" class="remove-column"><span class="visually-hidden">Remove</span></th>
-              </tr>
-            </thead>
-            <tbody id="member-rows"></tbody>
-            <tfoot>
-              <tr>
-                <th scope="row" colspan="2">Total</th>
-                <td id="table-pledged">₹9,107</td>
-                <td></td>
-                <td id="table-received">₹3,407</td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-        <p class="register-footnote">Source: attached Chhath Puja 2026 register. The 2025 fund balance is shown separately.</p>
       </section>
     </main>
 
@@ -171,48 +90,67 @@
         <p id="login-status" class="editor-status" role="status" aria-live="polite"></p>
       </form>
       <div id="editor-content" hidden>
-      <div class="editor-heading">
-        <div>
-          <span class="section-kicker">COMMUNITY CONTRIBUTIONS</span>
-          <h2 id="editor-title">Edit members register · 2026</h2>
+        <div class="manager-heading">
+          <div>
+            <span class="section-kicker">KARKATTA · PALAMU, JHARKHAND</span>
+            <h2 id="editor-title">Community manager</h2>
+          </div>
+          <div class="manager-heading-actions">
+            <button id="close-manager" class="button button-outline" type="button">Close</button>
+            <button id="manager-signout" class="button button-outline" type="button">Sign out</button>
+          </div>
         </div>
-        <label class="event-year-field">Celebration year
-          <input id="event-year" class="member-input" type="number" min="1" max="9999" step="1" required>
-        </label>
-        <div class="editor-actions">
-          <button id="add-member" class="button button-outline" type="button">
-            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
-            Add member
-          </button>
-          <button id="save-members" class="button button-primary" type="button">Save</button>
-          <button id="close-editor" class="button button-outline" type="button">Close</button>
-        </div>
-      </div>
-      <p id="editor-status" class="editor-status" role="status" aria-live="polite">Changes are not saved until you select Save.</p>
-      <div class="table-scroll editor-table-scroll">
-        <table class="member-table editor-table">
-          <thead>
-            <tr>
-              <th scope="col" class="number-column">No.</th>
-              <th scope="col">Member</th>
-              <th scope="col" class="amount-column">Pledged (₹)</th>
-              <th scope="col" class="paid-column">Paid</th>
-              <th scope="col" class="amount-column">Received (₹)</th>
-              <th scope="col" class="remove-column"><span class="visually-hidden">Remove</span></th>
-            </tr>
-          </thead>
-          <tbody id="editor-rows"></tbody>
-          <tfoot>
-            <tr>
-              <th scope="row" colspan="2">Total</th>
-              <td id="editor-pledged">₹0</td>
-              <td></td>
-              <td id="editor-received">₹0</td>
-              <td></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+        <nav class="manager-tabs" aria-label="Manager sections">
+          <button class="manager-tab is-active" type="button" data-manager-tab="register" aria-selected="true">Members register</button>
+          <button class="manager-tab" type="button" data-manager-tab="media" aria-selected="false">Photos &amp; videos</button>
+        </nav>
+        <section class="manager-panel" data-manager-panel="register" aria-labelledby="register-panel-title">
+          <div class="manager-panel-heading">
+            <h3 id="register-panel-title">Members register</h3>
+            <label class="event-year-field">Celebration year
+              <input id="event-year" class="member-input" type="number" min="1" max="9999" step="1" required>
+            </label>
+          </div>
+          <div class="register-summary" aria-label="Contribution totals">
+            <article class="summary-card"><span>Members</span><strong id="member-total">52</strong><small>in the register</small></article>
+            <article class="summary-card"><span>Total pledged</span><strong id="pledged-total">₹9,107</strong><small>as recorded</small></article>
+            <article class="summary-card summary-card-accent"><span>Received</span><strong id="received-total">₹3,407</strong><small>contributions collected</small></article>
+            <article class="summary-card"><span id="carry-forward-label">2025 carry-forward</span><strong>₹2,000</strong><small id="carry-forward-note">not included in totals</small></article>
+          </div>
+          <div class="manager-actions">
+            <label class="search-box">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.7" cy="8.7" r="5.7"/><path d="m13 13 4 4"/></svg>
+              <input id="member-search" type="search" placeholder="Find a member" autocomplete="off">
+            </label>
+            <button id="add-member" class="button button-outline" type="button">Add member</button>
+            <button id="export-pdf" class="button button-outline" type="button">Export PDF</button>
+            <button id="save-members" class="button button-primary" type="button">Save</button>
+          </div>
+          <p id="editor-status" class="editor-status" role="status" aria-live="polite">Changes are not saved until you select Save.</p>
+          <div class="table-scroll editor-table-scroll">
+            <table class="member-table editor-table">
+              <thead><tr><th scope="col" class="number-column">No.</th><th scope="col">Member</th><th scope="col" class="amount-column">Pledged (₹)</th><th scope="col" class="paid-column">Paid</th><th scope="col" class="amount-column">Received (₹)</th><th scope="col" class="remove-column"><span class="visually-hidden">Remove</span></th></tr></thead>
+              <tbody id="editor-rows"></tbody>
+              <tfoot><tr><th scope="row" colspan="2">Total</th><td id="editor-pledged">₹0</td><td></td><td id="editor-received">₹0</td><td></td></tr></tfoot>
+            </table>
+          </div>
+          <p class="register-footnote">Source: attached Chhath Puja register. The previous year's carry-forward is shown separately.</p>
+        </section>
+        <section class="manager-panel" data-manager-panel="media" aria-labelledby="media-panel-title" hidden>
+          <div class="manager-panel-heading">
+            <div><h3 id="media-panel-title">Manage photos &amp; videos</h3><p>Select images or videos to preview them in the gallery.</p></div>
+          </div>
+          <div id="drop-zone" class="upload-zone">
+            <input id="media-input" class="visually-hidden" type="file" accept="image/*,video/*" multiple disabled>
+            <span class="upload-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14.5v3A2.5 2.5 0 0 0 7.5 20h9a2.5 2.5 0 0 0 2.5-2.5v-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <div class="upload-copy"><strong>Bring the celebration to life</strong><span>Choose photos or videos, or drag them here</span></div>
+            <button id="choose-media" class="button button-outline" type="button" disabled>Choose files</button>
+            <p id="media-status" class="upload-note" role="status" aria-live="polite">Sign in to manage media. Previews remain on this device.</p>
+          </div>
+          <div id="manager-media-grid" class="media-grid" aria-live="polite"></div>
+        </section>
       </div>
     </dialog>
 
@@ -222,6 +160,6 @@
       <span id="footer-event-year" class="footer-year">CHHATH PUJA · 2026</span>
     </footer>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=20261113"></script>
   </body>
 </html>
