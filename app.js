@@ -70,6 +70,7 @@ const ORIGINAL_MEMBERS = [
 
 const membersTrigger = document.querySelector("#members-trigger");
 const memberSearch = document.querySelector("#member-search");
+const publicMemberSearch = document.querySelector("#public-member-search");
 const publicMemberRows = document.querySelector("#public-member-rows");
 const memberCards = document.querySelector("#member-cards");
 const publicRefreshButton = document.querySelector("#public-refresh");
@@ -122,6 +123,10 @@ let sharedLoadSequence = 0;
 
 function isValidYear(value) {
   return Number.isInteger(value) && value >= 1 && value <= 9999;
+}
+
+function sanitizeMemberName(value) {
+  return value.replace(/[^\p{L}\p{M}\s.'’-]/gu, "").replace(/\s+/g, " ");
 }
 
 function isValidMembers(value) {
@@ -619,11 +624,13 @@ function renderEditor() {
   updateRegisterSummary();
 }
 
-function renderPublicRegister(data = members, year = eventYear, title = eventTitle) {
+function renderPublicMemberRows(data = members) {
   const fragment = document.createDocumentFragment();
-  const pledged = data.reduce((total, member) => total + member.amount, 0);
-  const received = data.reduce((total, member) => total + member.received, 0);
-  data.forEach((member, index) => {
+  const filter = publicMemberSearch.value.trim().toLocaleLowerCase();
+  const matchingMembers = data
+    .map((member, index) => ({ member, index }))
+    .filter(({ member }) => member.name.toLocaleLowerCase().includes(filter));
+  matchingMembers.forEach(({ member, index }) => {
     const row = document.createElement("tr");
     const values = [
       String(index + 1),
@@ -642,7 +649,21 @@ function renderPublicRegister(data = members, year = eventYear, title = eventTit
     });
     fragment.append(row);
   });
+  if (matchingMembers.length === 0) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 5;
+    cell.textContent = "No members match your search.";
+    row.append(cell);
+    fragment.append(row);
+  }
   publicMemberRows.replaceChildren(fragment);
+}
+
+function renderPublicRegister(data = members, year = eventYear, title = eventTitle) {
+  const pledged = data.reduce((total, member) => total + member.amount, 0);
+  const received = data.reduce((total, member) => total + member.received, 0);
+  renderPublicMemberRows(data);
   document.querySelector("#public-register-title").textContent = `${title} members register · ${year}`;
   document.querySelector("#public-member-total").textContent = numberFormat.format(data.length);
   document.querySelector("#public-pledged-total").textContent = `₹${numberFormat.format(pledged)}`;
@@ -685,11 +706,9 @@ function renderMemberCards(data = members) {
     }
     const copy = document.createElement("div");
     copy.className = "member-card-copy";
-    const number = document.createElement("small");
-    number.textContent = `MEMBER PHOTO ${String(index + 1).padStart(2, "0")}`;
     const name = document.createElement("strong");
     name.textContent = member.name || "New member";
-    copy.append(number, name);
+    copy.append(name);
     card.append(frame, copy);
     fragment.append(card);
   });
@@ -968,7 +987,15 @@ editorRows.addEventListener("input", (event) => {
   if (!member || !target.dataset.field) return;
   const field = target.dataset.field;
   if (field === "name") {
-    member.name = target.value;
+    const rawValue = target.value;
+    const cursor = target.selectionStart;
+    const sanitizedValue = sanitizeMemberName(rawValue);
+    if (sanitizedValue !== rawValue) {
+      target.value = sanitizedValue;
+      const nextCursor = sanitizeMemberName(rawValue.slice(0, cursor)).length;
+      target.setSelectionRange(nextCursor, nextCursor);
+    }
+    member.name = sanitizedValue;
   } else {
     editorStatus.textContent = "Unsaved changes";
     editorStatus.classList.remove("is-error");
@@ -1013,6 +1040,7 @@ editorRows.addEventListener("click", (event) => {
 });
 
 memberSearch.addEventListener("input", renderEditor);
+publicMemberSearch.addEventListener("input", () => renderPublicMemberRows());
 
 addMemberButton.addEventListener("click", () => {
   memberSearch.value = "";

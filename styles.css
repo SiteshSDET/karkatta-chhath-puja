@@ -116,8 +116,7 @@ button { color: inherit; }
 .member-initials { z-index: 1; color: #fff9ec; font-family: "Playfair Display", Georgia, serif; font-size: 41px; text-shadow: 0 2px 12px #44251e66; }
 .member-photo-mark { position: absolute; z-index: 2; right: 9px; bottom: 8px; width: 27px; height: 27px; display: grid; place-items: center; border: 1px solid #ffffff99; border-radius: 50%; background: #532c32b5; color: #fff4d9; font-size: 13px; }
 .member-card-copy { min-height: 57px; padding: 9px 10px 10px; }
-.member-card-copy { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 7px; }
-.member-card-copy small { grid-column: 1 / -1; color: var(--saffron); font-size: 8px; font-weight: 800; letter-spacing: .12em; }
+.member-card-copy { display: flex; align-items: center; }
 .member-card-copy strong { min-width: 0; overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .gallery-section { padding-top: 67px; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
@@ -192,6 +191,7 @@ button { color: inherit; }
 .search-box { width: min(300px, 100%); height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
 .search-box svg { width: 16px; height: 16px; fill: none; stroke: #8b867d; stroke-width: 1.6; stroke-linecap: round; }
 .search-box input { width: 100%; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: 11px; }
+.public-member-search { max-width: 270px; margin: 0 0 14px auto; }
 .save-status { color: var(--green); font-size: 10px; }
 .save-status.is-error { color: #a63d30; }
 .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
