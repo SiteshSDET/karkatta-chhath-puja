@@ -644,8 +644,14 @@ function renderPublicMemberRows(data = members) {
     values.forEach((value, cellIndex) => {
       const cell = document.createElement("td");
       cell.dataset.label = labels[cellIndex];
-      cell.textContent = value;
-      if (cellIndex === 3) cell.className = member.paid ? "paid-state is-paid" : "paid-state";
+      if (cellIndex === 3) {
+        cell.className = member.paid ? "paid-state is-paid" : "paid-state";
+        const status = document.createElement("span");
+        status.textContent = value;
+        cell.append(status);
+      } else {
+        cell.textContent = value;
+      }
       row.append(cell);
     });
     fragment.append(row);
@@ -665,7 +671,7 @@ function renderPublicRegister(data = members, year = eventYear, title = eventTit
   const pledged = data.reduce((total, member) => total + member.amount, 0);
   const received = data.reduce((total, member) => total + member.received, 0);
   renderPublicMemberRows(data);
-  document.querySelector("#public-register-title").textContent = `${title} members register · ${year}`;
+  document.querySelector("#public-register-title").textContent = `${title} members register ${year}`;
   document.querySelector("#public-member-total").textContent = numberFormat.format(data.length);
   document.querySelector("#public-pledged-total").textContent = `₹${numberFormat.format(pledged)}`;
   document.querySelector("#public-received-total").textContent = `₹${numberFormat.format(received)}`;
@@ -825,11 +831,11 @@ function updateRegisterSummary() {
 }
 
 function applyEventSettings() {
-  document.querySelector("#page-title").textContent = `${eventTitle} ${eventYear} · Karkatta`;
+  document.querySelector("#page-title").textContent = `${eventTitle} ${eventYear} Karkatta`;
   document.querySelector('meta[name="description"]').content = `The Karkatta ${eventTitle} ${eventYear} community page, photo gallery and member contribution register.`;
   document.querySelector(".brand").setAttribute("aria-label", `${eventTitle} Karkatta home`);
   document.querySelector("#brand-event-title").textContent = eventTitle;
-  document.querySelector("#brand-event-year").textContent = `KARKATTA · ${eventYear}`;
+  document.querySelector("#brand-event-year").textContent = `KARKATTA  ${eventYear}`;
   document.querySelector("#hero-eyebrow").textContent = heroEyebrow;
   document.querySelector("#hero-description").textContent = heroDescription;
   document.querySelector("#hero-caption").textContent = heroCaption;
@@ -837,11 +843,11 @@ function applyEventSettings() {
   document.querySelector("#hero-year").textContent = String(eventYear);
   document.querySelector("#hero-event-label").textContent = eventTitle;
   document.querySelector("#hero-event-year").textContent = String(eventYear);
-  document.querySelector("#register-panel-title").textContent = `${eventTitle} members register · ${eventYear}`;
+  document.querySelector("#register-panel-title").textContent = `${eventTitle} members register ${eventYear}`;
   document.querySelector("#carry-forward-label").textContent = `${eventYear - 1} carry-forward`;
   document.querySelector("#carry-forward-note").textContent = `not included in ${eventYear} totals`;
   document.querySelector(".register-footnote").textContent = `Source: attached ${eventTitle} ${eventYear} register. The ${eventYear - 1} fund balance is shown separately.`;
-  document.querySelector("#footer-event-year").textContent = `${eventTitle.toUpperCase()} · ${eventYear}`;
+  document.querySelector("#footer-event-year").textContent = `${eventTitle.toUpperCase()} ${eventYear}`;
   eventTitleInput.value = eventTitle;
   eventYearInput.value = String(eventYear);
   heroEyebrowInput.value = heroEyebrow;
@@ -901,6 +907,7 @@ function prepareEditor() {
   renderEditor();
   editorStatus.textContent = "Changes are not saved until you select Save.";
   editorStatus.classList.remove("is-error");
+  editorDialog.classList.add("is-manager");
   editorContent.hidden = false;
   loginForm.hidden = true;
 }
@@ -1151,6 +1158,7 @@ managerSignoutButton.addEventListener("click", () => {
   loginForm.reset();
   loginForm.hidden = false;
   editorContent.hidden = true;
+  editorDialog.classList.remove("is-manager");
   loginStatus.textContent = "You have signed out.";
 });
 document.querySelectorAll("[data-manager-tab]").forEach((tab) => {

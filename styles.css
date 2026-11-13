@@ -31,18 +31,29 @@ button, input { font: inherit; }
 button { color: inherit; }
 
 .site-header {
+  position: sticky;
+  z-index: 20;
+  top: 0;
   width: min(1120px, calc(100% - 64px));
   height: 82px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: #fbf8f2f2;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
   gap: 11px;
+  padding: 6px 13px 6px 6px;
+  border: 1px solid #eee0cc;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #fffdf9, #f8efe2);
+  box-shadow: 0 5px 15px #50351b10;
   color: inherit;
   text-decoration: none;
 }
@@ -64,21 +75,22 @@ button { color: inherit; }
 .brand-copy strong { font-family: "Playfair Display", Georgia, serif; font-size: 17px; font-weight: 600; }
 .brand-copy small { color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .16em; }
 
-.main-nav { display: flex; align-items: center; gap: 7px; padding: 5px; border: 1px solid #eee2d2; border-radius: 14px; background: linear-gradient(135deg, #fffdf9, #f7efe5); box-shadow: 0 5px 15px #50351b10; }
+.main-nav { display: flex; align-items: center; gap: 9px; }
 .main-nav a, .members-trigger {
   min-height: 38px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0 14px;
-  border: 1px solid transparent;
+  border: 1px solid #eee2d2;
   border-radius: 10px;
-  background: transparent;
+  background: linear-gradient(135deg, #fffdf9, #f7efe5);
   color: #665449;
   font-size: 13px;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
+  box-shadow: 0 4px 11px #50351b0d;
 }
 .main-nav a:hover, .members-trigger:hover { border-color: #e8d4bd; background: #fff; color: var(--maroon); }
 .members-trigger { display: inline-flex; align-items: center; }
@@ -191,8 +203,8 @@ button { color: inherit; }
 .public-table-scroll { overflow-x: visible; }
 .public-member-table th:nth-child(2) { width: 34%; }
 .public-member-table td:nth-child(2) { overflow-wrap: anywhere; }
-.paid-state { color: #8d5c2c; font-weight: 600; }
-.paid-state.is-paid { color: var(--green); }
+.paid-state > span { width: fit-content; min-width: 62px; display: inline-flex; align-items: center; justify-content: center; padding: 5px 10px; border: 1px solid #efb9b5; border-radius: 999px; background: #fff0ef; color: #ad302a; font-size: 10px; font-weight: 800; }
+.paid-state.is-paid > span { border-color: #b6d9bd; background: #e9f7ec; color: #23743a; }
 .summary-card { min-height: 105px; padding: 16px 18px; display: grid; align-content: start; gap: 4px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
 .summary-card > span { color: var(--muted); font-size: 10px; }
 .summary-card strong { font-family: "Playfair Display", Georgia, serif; font-size: 23px; font-weight: 600; line-height: 1.25; }
@@ -249,6 +261,32 @@ button { color: inherit; }
   color: var(--ink);
   box-shadow: 0 24px 80px #23130f55;
   overscroll-behavior: contain;
+}
+dialog.member-editor[open].is-manager {
+  display: flex;
+  flex-direction: column;
+  height: min(88vh, 900px);
+  overflow: hidden;
+}
+dialog.member-editor[open].is-manager #editor-content {
+  min-height: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+.manager-heading, .manager-tabs { flex: 0 0 auto; }
+dialog.member-editor[open].is-manager .manager-panel:not([hidden]) {
+  min-height: 0;
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+dialog.member-editor[open].is-manager .editor-table-scroll {
+  max-height: none;
+  overflow: visible;
 }
 .member-editor::backdrop { background: #23130f99; }
 .admin-login { width: min(440px, 100%); margin: 0 auto; }
@@ -441,8 +479,9 @@ button { color: inherit; }
   .brand-mark svg { width: 26px; height: 26px; }
   .brand-copy strong { font-size: 14px; }
   .brand-copy small { font-size: 7px; letter-spacing: .12em; }
-  .main-nav { flex: 0 0 auto; gap: 6px; padding: 4px; border: 1px solid #eee2d2; border-radius: 13px; background: linear-gradient(135deg, #fffdf9, #f7efe5); box-shadow: 0 4px 12px #50351b10; }
-  .main-nav a, .members-trigger { min-height: 34px; display: inline-flex; align-items: center; justify-content: center; padding: 0 10px; border: 1px solid transparent; border-radius: 9px; color: #665449; font-size: 11px; font-weight: 700; }
+  .brand { padding: 5px 8px 5px 5px; border-radius: 12px; }
+  .main-nav { flex: 0 0 auto; gap: 6px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+  .main-nav a, .members-trigger { min-height: 34px; display: inline-flex; align-items: center; justify-content: center; padding: 0 10px; border: 1px solid #eee2d2; border-radius: 9px; background: linear-gradient(135deg, #fffdf9, #f7efe5); color: #665449; font-size: 11px; font-weight: 700; box-shadow: 0 4px 11px #50351b0d; }
   .main-nav a:hover, .members-trigger:hover { border-color: #e8d4bd; background: #fff; color: var(--maroon); }
   .hero { min-height: 390px; }
   .hero-content { width: calc(100% - 36px); }
@@ -504,6 +543,7 @@ button { color: inherit; }
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
+  dialog.member-editor[open].is-manager { height: auto; }
   .admin-login { padding-bottom: max(8px, env(safe-area-inset-bottom)); }
   .admin-login label input { min-height: 44px; font-size: 16px; }
   .admin-login .editor-actions { display: grid; grid-template-columns: 1fr 1fr; }
