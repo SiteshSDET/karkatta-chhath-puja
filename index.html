@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#762c25">
     <meta name="description" content="The Karkatta Chhath Puja community page, photo gallery and member contribution register.">
     <title id="page-title">Chhath Puja 2026 · Karkatta</title>
@@ -56,6 +56,17 @@
           </div>
         </div>
         <div class="hero-caption" aria-hidden="true">ARAGHYA · GRATITUDE · TOGETHERNESS</div>
+      </section>
+
+      <section id="member-photos" class="content-section member-gallery-section" aria-labelledby="member-gallery-title">
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">OUR KARKATTA COMMUNITY</span>
+            <h2 id="member-gallery-title">Meet our members</h2>
+          </div>
+          <span class="section-aside">Swipe to explore our first 20 members</span>
+        </div>
+        <div id="member-cards" class="member-cards" aria-label="Member photo cards" tabindex="0"></div>
       </section>
 
       <section id="members-section" class="content-section public-register" aria-labelledby="public-register-title">
@@ -141,6 +152,7 @@
         <nav class="manager-tabs" aria-label="Manager sections">
           <button class="manager-tab is-active" type="button" data-manager-tab="register" aria-selected="true">Members register</button>
           <button class="manager-tab" type="button" data-manager-tab="settings" aria-selected="false">Site details</button>
+          <button class="manager-tab" type="button" data-manager-tab="member-photos" aria-selected="false">Member photos</button>
           <button class="manager-tab" type="button" data-manager-tab="media" aria-selected="false">Photos &amp; videos</button>
         </nav>
         <section class="manager-panel" data-manager-panel="register" aria-labelledby="register-panel-title">
@@ -186,6 +198,19 @@
             <button id="save-event-settings" class="button button-primary" type="button">Save site details</button>
             <p id="settings-status" class="editor-status" role="status" aria-live="polite">Updates appear across the site after you save.</p>
           </div>
+        </section>
+        <section class="manager-panel" data-manager-panel="member-photos" aria-labelledby="member-photo-panel-title" hidden>
+          <div class="manager-panel-heading">
+            <div><h3 id="member-photo-panel-title">Manage member photos</h3><p>Choose a member and add a photo to their landing-page card.</p></div>
+          </div>
+          <div class="member-photo-tools">
+            <label for="member-photo-select">Member</label>
+            <select id="member-photo-select" class="settings-input"></select>
+            <input id="member-photo-input" class="visually-hidden" type="file" accept="image/*" disabled>
+            <button id="choose-member-photo" class="button button-outline" type="button" disabled>Add member photo</button>
+            <p id="member-photo-status" class="editor-status" role="status" aria-live="polite">Photos are previews on this device for this session.</p>
+          </div>
+          <div id="manager-member-photo-list" class="manager-member-photo-list"></div>
         </section>
         <section class="manager-panel" data-manager-panel="media" aria-labelledby="media-panel-title" hidden>
           <div class="manager-panel-heading">

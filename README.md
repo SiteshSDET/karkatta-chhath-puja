@@ -9,7 +9,7 @@ Static site for the Karkatta Chhath Puja member register and media gallery.
 3. In the SQL file's final commented statement, replace `admin@example.com` with the administrator's email, uncomment the statement, and run it. This assigns the `register_admin` authorization claim. Do not grant admin access to regular members.
 4. The register is visible on the landing page and can be exported as a read-only, downloadable PDF (mobile devices can save it from the share sheet). Use **Manager** to edit the register, update the celebration title/year in **Site details**, or open the photo/video manager.
 
-The gallery includes clearly labeled illustrative photo/video samples. Photo and video selections made in Manager are currently browser-local previews for the current session; they are not uploaded to Supabase Storage or shared with other visitors.
+The gallery includes clearly labeled illustrative photo/video samples and swipeable member cards. Member photos and other media selected in Manager are currently browser-local previews for the current session; they are not uploaded to Supabase Storage or shared with other visitors.
 
 The browser app uses the project's public publishable key. Never put a Supabase `service_role` or secret key in this static site.
 

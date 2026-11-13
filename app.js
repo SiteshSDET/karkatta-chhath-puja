@@ -67,6 +67,7 @@ const ORIGINAL_MEMBERS = [
 const membersTrigger = document.querySelector("#members-trigger");
 const memberSearch = document.querySelector("#member-search");
 const publicMemberRows = document.querySelector("#public-member-rows");
+const memberCards = document.querySelector("#member-cards");
 const editorDialog = document.querySelector("#member-editor");
 const editorRows = document.querySelector("#editor-rows");
 const editorStatus = document.querySelector("#editor-status");
@@ -82,6 +83,10 @@ const saveEventSettingsButton = document.querySelector("#save-event-settings");
 const dropZone = document.querySelector("#drop-zone");
 const mediaInput = document.querySelector("#media-input");
 const chooseMediaButton = document.querySelector("#choose-media");
+const memberPhotoSelect = document.querySelector("#member-photo-select");
+const memberPhotoInput = document.querySelector("#member-photo-input");
+const chooseMemberPhotoButton = document.querySelector("#choose-member-photo");
+const memberPhotoStatus = document.querySelector("#member-photo-status");
 const managerSignoutButton = document.querySelector("#manager-signout");
 const numberFormat = new Intl.NumberFormat("en-IN");
 const BASE_YEAR = 2026;
@@ -93,6 +98,7 @@ let editingMembers = [];
 let authSession = null;
 let mediaAuthorized = false;
 let supportsSharedEventTitle = true;
+const memberPhotoUrls = new Map();
 
 function isValidYear(value) {
   return Number.isInteger(value) && value >= 1 && value <= 9999;
@@ -202,6 +208,7 @@ async function loadSharedRegister(useLegacySchema = false) {
     saveLocalRegister(members, eventYear, eventTitle);
     applyEventSettings();
     renderPublicRegister();
+    populateMemberPhotoSelect();
     renderEditor();
     setSaveStatus("Shared register loaded");
     return true;
@@ -361,6 +368,104 @@ function renderPublicRegister(data = members, year = eventYear, title = eventTit
   document.querySelector("#public-carry-forward-note").textContent = `not included in ${year} totals`;
   document.querySelector("#public-table-pledged").textContent = `₹${numberFormat.format(pledged)}`;
   document.querySelector("#public-table-received").textContent = `₹${numberFormat.format(received)}`;
+  renderMemberCards(data);
+}
+
+function memberInitials(name) {
+  return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0] || "").join("").toLocaleUpperCase() || "?";
+}
+
+function renderMemberCards(data = members) {
+  const fragment = document.createDocumentFragment();
+  data.slice(0, 20).forEach((member, index) => {
+    const card = document.createElement("article");
+    card.className = "member-card";
+    const frame = document.createElement("div");
+    frame.className = "member-photo-frame";
+    frame.style.background = `linear-gradient(145deg, ${["#f2d9b8, #c67d50 55%, #773c3d", "#e7d6b7, #a77753 55%, #513847", "#f0d7b0, #b45c4d 55%, #65394b", "#e8d6c3, #bd8c53 55%, #4b5360"][index % 4]})`;
+    const photoUrl = memberPhotoUrls.get(member.id);
+    if (photoUrl) {
+      const photo = document.createElement("img");
+      photo.src = photoUrl;
+      photo.alt = `${member.name || "Member"} photo`;
+      frame.append(photo);
+    } else {
+      const initials = document.createElement("span");
+      initials.className = "member-initials";
+      initials.textContent = memberInitials(member.name);
+      frame.append(initials);
+      const mark = document.createElement("span");
+      mark.className = "member-photo-mark";
+      mark.setAttribute("aria-hidden", "true");
+      mark.textContent = "+";
+      frame.append(mark);
+    }
+    const copy = document.createElement("div");
+    copy.className = "member-card-copy";
+    const number = document.createElement("small");
+    number.textContent = `MEMBER PHOTO ${String(index + 1).padStart(2, "0")}`;
+    const name = document.createElement("strong");
+    name.textContent = member.name || "New member";
+    copy.append(number, name);
+    card.append(frame, copy);
+    fragment.append(card);
+  });
+  memberCards.replaceChildren(fragment);
+}
+
+function populateMemberPhotoSelect() {
+  const selectedMemberId = memberPhotoSelect.value;
+  const options = members.slice(0, 20).map((member, index) => {
+    const option = document.createElement("option");
+    option.value = member.id;
+    option.textContent = `${String(index + 1).padStart(2, "0")} · ${member.name || "New member"}`;
+    return option;
+  });
+  memberPhotoSelect.replaceChildren(...options);
+  if (members.some((member) => member.id === selectedMemberId)) {
+    memberPhotoSelect.value = selectedMemberId;
+  }
+  renderManagerMemberPhotos();
+}
+
+function renderManagerMemberPhotos() {
+  const list = document.querySelector("#manager-member-photo-list");
+  const fragment = document.createDocumentFragment();
+  members.slice(0, 20).forEach((member) => {
+    const item = document.createElement("div");
+    item.className = "manager-member-photo-item";
+    const url = memberPhotoUrls.get(member.id);
+    if (url) {
+      const image = document.createElement("img");
+      image.src = url;
+      image.alt = "";
+      item.append(image);
+    } else {
+      const placeholder = document.createElement("span");
+      placeholder.className = "manager-member-photo-placeholder";
+      placeholder.textContent = memberInitials(member.name);
+      item.append(placeholder);
+    }
+    const name = document.createElement("strong");
+    name.textContent = member.name || "New member";
+    item.append(name);
+    if (url) {
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "remove-row";
+      remove.textContent = "×";
+      remove.setAttribute("aria-label", `Remove photo for ${member.name}`);
+      remove.addEventListener("click", () => {
+        URL.revokeObjectURL(url);
+        memberPhotoUrls.delete(member.id);
+        renderMemberCards();
+        renderManagerMemberPhotos();
+      });
+      item.append(remove);
+    }
+    fragment.append(item);
+  });
+  list.replaceChildren(fragment);
 }
 
 function updateRegisterSummary() {
@@ -395,6 +500,8 @@ function openEditor() {
   mediaAuthorized = Boolean(signedIn);
   mediaInput.disabled = !mediaAuthorized;
   chooseMediaButton.disabled = !mediaAuthorized;
+  memberPhotoInput.disabled = !mediaAuthorized;
+  chooseMemberPhotoButton.disabled = !mediaAuthorized;
   loginForm.hidden = Boolean(signedIn);
   editorContent.hidden = !signedIn;
   loginStatus.textContent = "";
@@ -459,6 +566,8 @@ loginForm.addEventListener("submit", async (event) => {
     mediaAuthorized = true;
     mediaInput.disabled = false;
     chooseMediaButton.disabled = false;
+    memberPhotoInput.disabled = false;
+    chooseMemberPhotoButton.disabled = false;
     const loaded = await loadSharedRegister();
     prepareEditor();
     if (!loaded) {
@@ -561,6 +670,7 @@ saveMembersButton.addEventListener("click", async () => {
   applyEventSettings();
   renderEditor();
   renderPublicRegister();
+  populateMemberPhotoSelect();
   editorStatus.textContent = "Changes saved successfully for everyone.";
   editorStatus.classList.remove("is-error");
   setSaveStatus("Shared register updated successfully.");
@@ -614,6 +724,8 @@ managerSignoutButton.addEventListener("click", () => {
   mediaAuthorized = false;
   mediaInput.disabled = true;
   chooseMediaButton.disabled = true;
+  memberPhotoInput.disabled = true;
+  chooseMemberPhotoButton.disabled = true;
   loginForm.reset();
   loginForm.hidden = false;
   editorContent.hidden = true;
@@ -782,6 +894,51 @@ const mediaStatus = document.querySelector("#media-status");
 const mediaUrls = new Set();
 const maxFileSize = 30 * 1024 * 1024;
 mediaInput.disabled = true;
+memberPhotoInput.disabled = true;
+populateMemberPhotoSelect();
+
+chooseMemberPhotoButton.addEventListener("click", () => {
+  if (!mediaAuthorized || !authSession || authSession.expires_at <= Date.now() / 1000) {
+    memberPhotoStatus.textContent = "Your admin session has expired. Sign in again to manage member photos.";
+    memberPhotoStatus.classList.add("is-error");
+    return;
+  }
+  if (!memberPhotoSelect.value) {
+    memberPhotoStatus.textContent = "Add a member in the register before choosing a photo.";
+    memberPhotoStatus.classList.add("is-error");
+    return;
+  }
+  memberPhotoInput.click();
+});
+
+memberPhotoInput.addEventListener("change", () => {
+  const file = memberPhotoInput.files?.[0];
+  memberPhotoInput.value = "";
+  if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    memberPhotoStatus.textContent = "Choose an image file for a member photo.";
+    memberPhotoStatus.classList.add("is-error");
+    return;
+  }
+  if (file.size > maxFileSize) {
+    memberPhotoStatus.textContent = "Member photos must be 30 MB or smaller.";
+    memberPhotoStatus.classList.add("is-error");
+    return;
+  }
+  const member = members.find((item) => item.id === memberPhotoSelect.value);
+  if (!member) {
+    memberPhotoStatus.textContent = "Select a current member before adding a photo.";
+    memberPhotoStatus.classList.add("is-error");
+    return;
+  }
+  const previousUrl = memberPhotoUrls.get(member.id);
+  if (previousUrl) URL.revokeObjectURL(previousUrl);
+  memberPhotoUrls.set(member.id, URL.createObjectURL(file));
+  renderMemberCards();
+  renderManagerMemberPhotos();
+  memberPhotoStatus.textContent = `Photo preview added for ${member.name}. It is visible only in this browser session.`;
+  memberPhotoStatus.classList.remove("is-error");
+});
 
 document.querySelector("#choose-media").addEventListener("click", () => {
   if (!mediaAuthorized || !authSession || authSession.expires_at <= Date.now() / 1000) {
@@ -874,6 +1031,7 @@ for (const eventName of ["dragleave", "drop"]) {
 
 window.addEventListener("beforeunload", () => {
   for (const url of mediaUrls) URL.revokeObjectURL(url);
+  for (const url of memberPhotoUrls.values()) URL.revokeObjectURL(url);
 });
 
 applyEventSettings();
