@@ -579,14 +579,14 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
   .gallery-card-copy { padding: 13px 14px 15px; }
   .gallery-card h3 { font-size: 18px; }
   .gallery-manager-controls { grid-template-columns: 1fr; gap: 9px; }
-  .accounts-heading { align-items: stretch; }
+  .accounts-heading { align-items: flex-start; flex-direction: column; gap: 14px; }
   .accounts-heading > div:first-child { width: 100%; }
   .accounts-year-control { width: 100%; grid-template-columns: auto minmax(100px, 1fr); align-items: center; }
-  .accounts-actions { max-width: none; display: grid; grid-template-columns: 1fr; }
+  .accounts-actions { width: 100%; max-width: none; display: grid; grid-template-columns: 1fr; }
   .accounts-actions .button { width: 100%; }
-  .accounts-summary { grid-template-columns: 1fr; gap: 9px; margin: 14px 0; }
-  .account-card { min-height: 90px; padding: 13px 15px; border-radius: 12px; }
-  .account-card > strong { font-size: 22px; }
+  .accounts-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0; }
+  .account-card { min-height: 87px; padding: 11px; border-radius: 12px; }
+  .account-card > strong { font-size: 18px; }
   .accounts-details { padding: 8px; }
   .accounts-table { display: block; width: 100%; }
   .accounts-table thead { display: none; }
@@ -704,7 +704,7 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
   .main-nav { gap: 3px; padding: 3px; }
   .main-nav a, .members-trigger { min-height: 31px; padding: 0 7px; font-size: 10px; }
   .gallery-year-control { width: 101px; flex-basis: 101px; }
-  .accounts-summary { grid-template-columns: 1fr; }
+  .accounts-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media print {
