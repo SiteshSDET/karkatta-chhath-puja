@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1">
+      <stop stop-color="#53314a"/>
+      <stop offset=".55" stop-color="#bd6549"/>
+      <stop offset="1" stop-color="#f0bd71"/>
+    </linearGradient>
+    <linearGradient id="river" x2="0" y2="1">
+      <stop stop-color="#a55e55"/>
+      <stop offset="1" stop-color="#332d3a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="700" fill="url(#sky)"/>
+  <circle cx="850" cy="254" r="96" fill="#ffe1a0"/>
+  <path d="M0 399c163-48 303-46 466-7s291 47 438 4 200-42 296-20v324H0Z" fill="#573942"/>
+  <path d="M0 472c178-27 302-14 471 20s292 30 447-9 196-39 282-20v237H0Z" fill="url(#river)"/>
+  <g fill="none" stroke="#f8c679" stroke-linecap="round" opacity=".7">
+    <path d="M100 509h300m220-5h160m120 28h220M220 582h260m180-2h360" stroke-width="5"/>
+    <path d="M498 552h120m310 47h180" stroke-width="3"/>
+  </g>
+  <path d="M0 619c143-40 272-36 418 6s289 49 433 5 234-46 349-20v90H0Z" fill="#302832"/>
+  <path d="M490 607c10-42 33-64 70-68 38 3 61 26 70 68l-22 8H511Z" fill="#312930"/>
+  <circle cx="560" cy="522" r="24" fill="#312930"/>
+  <circle cx="600" cy="344" r="43" fill="#ffffff" fill-opacity=".92"/>
+  <path d="m590 322 34 22-34 22Z" fill="#762c25"/>
+</svg>

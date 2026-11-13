@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1">
+      <stop stop-color="#6c3440"/>
+      <stop offset=".52" stop-color="#d97947"/>
+      <stop offset="1" stop-color="#f6c879"/>
+    </linearGradient>
+    <linearGradient id="water" x2="0" y2="1">
+      <stop stop-color="#96564b"/>
+      <stop offset="1" stop-color="#382d3a"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop stop-color="#ffe4a0" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#f9b55e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="700" fill="url(#sky)"/>
+  <circle cx="850" cy="275" r="205" fill="url(#glow)"/>
+  <circle cx="850" cy="275" r="92" fill="#ffd58d"/>
+  <path d="M0 400c180-54 303-52 472-8s300 53 440 5 192-49 288-20v323H0Z" fill="#573942" opacity=".8"/>
+  <path d="M0 460c176-27 302-14 471 20s292 30 447-9 196-39 282-20v249H0Z" fill="url(#water)"/>
+  <g fill="none" stroke="#f8c679" stroke-linecap="round" opacity=".62">
+    <path d="M105 493h270m-180 31h360m270-28h300m-530 61h270m-540 42h260m365-12h285" stroke-width="5"/>
+    <path d="M460 480h105m-39 54h175m-400 49h90m500 13h160" stroke-width="3"/>
+  </g>
+  <path d="M0 604c143-40 272-36 418 6s289 49 433 5 234-46 349-20v105H0Z" fill="#332b35"/>
+  <g fill="#302730">
+    <path d="M152 591c10-42 33-64 70-68 38 3 61 26 70 68l-22 8H173Z"/>
+    <circle cx="222" cy="507" r="24"/>
+    <path d="M287 602c12-48 38-74 80-78 41 4 67 31 79 78l-22 8H308Z"/>
+    <circle cx="367" cy="508" r="25"/>
+    <path d="M1010 600c10-39 32-59 65-63 35 4 56 24 66 63l-20 8h-91Z"/>
+    <circle cx="1075" cy="514" r="22"/>
+  </g>
+  <g transform="translate(567 536)">
+    <path d="M0 63h136l-13 30H14Z" fill="#b96e3c"/>
+    <path d="M12 61c4-37 25-53 56-54 31 1 52 17 56 54Z" fill="#e2a04d"/>
+    <path d="M38 52c4-24 13-34 30-38 17 4 26 14 30 38Z" fill="#f3c96d"/>
+    <circle cx="68" cy="17" r="12" fill="#f5d992"/>
+    <path d="M69 4c-9-18 4-25 12-36M60 7C42-7 44-21 51-31M76 8c14-14 13-25 9-35" fill="none" stroke="#688457" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <text x="54" y="78" fill="#fff1d2" font-family="Georgia,serif" font-size="26" letter-spacing="6">KARKATTA · PALAMU</text>
+</svg>

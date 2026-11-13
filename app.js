@@ -2,6 +2,7 @@ const STORAGE_KEY = "chhath-puja-2026-members";
 const SUPABASE_URL = "https://qxxosdobwekiminhruse.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_QSWu8a0Hity972oLGMcACg_XttGKNCw";
 const SHARED_REGISTER_ID = "chhath-puja-2026";
+const BASE_TITLE = "Chhath Puja";
 const ORIGINAL_MEMBERS = [
   ["Sudheep", 501, true, 501],
   ["Anil", 101, true, 101],
@@ -65,6 +66,7 @@ const ORIGINAL_MEMBERS = [
 
 const membersTrigger = document.querySelector("#members-trigger");
 const memberSearch = document.querySelector("#member-search");
+const publicMemberRows = document.querySelector("#public-member-rows");
 const editorDialog = document.querySelector("#member-editor");
 const editorRows = document.querySelector("#editor-rows");
 const editorStatus = document.querySelector("#editor-status");
@@ -73,8 +75,10 @@ const loginStatus = document.querySelector("#login-status");
 const editorContent = document.querySelector("#editor-content");
 const closeLoginButton = document.querySelector("#close-login");
 const eventYearInput = document.querySelector("#event-year");
+const eventTitleInput = document.querySelector("#event-title");
 const addMemberButton = document.querySelector("#add-member");
 const saveMembersButton = document.querySelector("#save-members");
+const saveEventSettingsButton = document.querySelector("#save-event-settings");
 const dropZone = document.querySelector("#drop-zone");
 const mediaInput = document.querySelector("#media-input");
 const chooseMediaButton = document.querySelector("#choose-media");
@@ -84,9 +88,11 @@ const BASE_YEAR = 2026;
 const loadedRegister = loadRegister();
 let members = loadedRegister.members;
 let eventYear = loadedRegister.year;
+let eventTitle = loadedRegister.title;
 let editingMembers = [];
 let authSession = null;
 let mediaAuthorized = false;
+let supportsSharedEventTitle = true;
 
 function isValidYear(value) {
   return Number.isInteger(value) && value >= 1 && value <= 9999;
@@ -109,20 +115,20 @@ function loadRegister() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved === null) {
-      return { members: ORIGINAL_MEMBERS.map((member) => ({ ...member })), year: BASE_YEAR };
+      return { members: ORIGINAL_MEMBERS.map((member) => ({ ...member })), year: BASE_YEAR, title: BASE_TITLE };
     }
     const parsed = JSON.parse(saved);
     if (Array.isArray(parsed)) {
       if (!isValidMembers(parsed)) throw new Error("Saved register has an invalid format.");
-      return { members: parsed, year: BASE_YEAR };
+      return { members: parsed, year: BASE_YEAR, title: BASE_TITLE };
     }
     if (!parsed || !isValidMembers(parsed.members) || !isValidYear(parsed.year)) {
       throw new Error("Saved register has an invalid format.");
     }
-    return parsed;
+    return { ...parsed, title: typeof parsed.title === "string" && parsed.title.trim() ? parsed.title : BASE_TITLE };
   } catch (error) {
     setSaveStatus("Could not load saved edits; showing the original register.", true);
-    return { members: ORIGINAL_MEMBERS.map((member) => ({ ...member })), year: BASE_YEAR };
+    return { members: ORIGINAL_MEMBERS.map((member) => ({ ...member })), year: BASE_YEAR, title: BASE_TITLE };
   }
 }
 
@@ -133,9 +139,9 @@ function setSaveStatus(message, isError = false) {
   }
 }
 
-function saveLocalRegister(value, year) {
+function saveLocalRegister(value, year, title) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ members: value, year }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ members: value, year, title }));
     return true;
   } catch (error) {
     return false;
@@ -162,11 +168,12 @@ async function getApiResult(response) {
   return result;
 }
 
-async function loadSharedRegister() {
+async function loadSharedRegister(useLegacySchema = false) {
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/shared_register?id=eq.${encodeURIComponent(SHARED_REGISTER_ID)}&select=members,event_year`,
+      `${SUPABASE_URL}/rest/v1/shared_register?id=eq.${encodeURIComponent(SHARED_REGISTER_ID)}&select=${useLegacySchema ? "members,event_year" : "members,event_year,event_title"}`,
       {
+        cache: "no-store",
         headers: {
           apikey: SUPABASE_PUBLISHABLE_KEY,
           Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
@@ -185,26 +192,40 @@ async function loadSharedRegister() {
     if (!isValidMembers(register.members) || !isValidYear(register.event_year)) {
       throw new Error("The shared register data is invalid.");
     }
+    if (!useLegacySchema && (typeof register.event_title !== "string" || !register.event_title.trim())) {
+      throw new Error("The shared event title is invalid. Run the updated Supabase setup SQL.");
+    }
     members = register.members;
     eventYear = register.event_year;
-    saveLocalRegister(members, eventYear);
-    applyEventYear();
+    eventTitle = useLegacySchema ? BASE_TITLE : register.event_title;
+    supportsSharedEventTitle = !useLegacySchema;
+    saveLocalRegister(members, eventYear, eventTitle);
+    applyEventSettings();
+    renderPublicRegister();
     renderEditor();
     setSaveStatus("Shared register loaded");
     return true;
   } catch (error) {
+    if (!useLegacySchema && error.message?.toLowerCase().includes("event_title")) {
+      supportsSharedEventTitle = false;
+      return loadSharedRegister(true);
+    }
     setSaveStatus(`Shared register unavailable: ${error.message}`, true);
     return false;
   }
 }
 
-async function saveSharedRegister(value, year) {
+async function saveSharedRegister(value, year, title, includeTitle = supportsSharedEventTitle) {
   if (!authSession || authSession.expires_at <= Date.now() / 1000) {
     authSession = null;
     throw new Error("Admin session expired. Close this window and sign in again.");
   }
+  if (!includeTitle && title !== eventTitle) {
+    throw new Error("Run the updated supabase-setup.sql to enable shared title editing.");
+  }
   const response = await fetch(`${SUPABASE_URL}/rest/v1/shared_register?on_conflict=id`, {
     method: "POST",
+    cache: "no-store",
     headers: {
       apikey: SUPABASE_PUBLISHABLE_KEY,
       Authorization: `Bearer ${authSession.access_token}`,
@@ -215,9 +236,21 @@ async function saveSharedRegister(value, year) {
       id: SHARED_REGISTER_ID,
       members: value,
       event_year: year,
+      ...(includeTitle ? { event_title: title } : {}),
     }),
   });
-  await getApiResult(response);
+  try {
+    await getApiResult(response);
+  } catch (error) {
+    if (includeTitle && error.message?.toLowerCase().includes("event_title")) {
+      supportsSharedEventTitle = false;
+      if (title !== eventTitle) {
+        throw new Error("Run the updated supabase-setup.sql to enable shared title editing.");
+      }
+      return saveSharedRegister(value, year, title, false);
+    }
+    throw error;
+  }
 }
 
 function createInput(member, field, type, className) {
@@ -296,6 +329,40 @@ function renderEditor() {
   updateRegisterSummary();
 }
 
+function renderPublicRegister(data = members, year = eventYear, title = eventTitle) {
+  const fragment = document.createDocumentFragment();
+  const pledged = data.reduce((total, member) => total + member.amount, 0);
+  const received = data.reduce((total, member) => total + member.received, 0);
+  data.forEach((member, index) => {
+    const row = document.createElement("tr");
+    const values = [
+      String(index + 1),
+      member.name,
+      numberFormat.format(member.amount),
+      member.paid ? "Paid" : "Pending",
+      numberFormat.format(member.received),
+    ];
+    const labels = ["No.", "Member", "Pledged (₹)", "Paid", "Received (₹)"];
+    values.forEach((value, cellIndex) => {
+      const cell = document.createElement("td");
+      cell.dataset.label = labels[cellIndex];
+      cell.textContent = value;
+      if (cellIndex === 3) cell.className = member.paid ? "paid-state is-paid" : "paid-state";
+      row.append(cell);
+    });
+    fragment.append(row);
+  });
+  publicMemberRows.replaceChildren(fragment);
+  document.querySelector("#public-register-title").textContent = `${title} members register · ${year}`;
+  document.querySelector("#public-member-total").textContent = numberFormat.format(data.length);
+  document.querySelector("#public-pledged-total").textContent = `₹${numberFormat.format(pledged)}`;
+  document.querySelector("#public-received-total").textContent = `₹${numberFormat.format(received)}`;
+  document.querySelector("#public-carry-forward-label").textContent = `${year - 1} carry-forward`;
+  document.querySelector("#public-carry-forward-note").textContent = `not included in ${year} totals`;
+  document.querySelector("#public-table-pledged").textContent = `₹${numberFormat.format(pledged)}`;
+  document.querySelector("#public-table-received").textContent = `₹${numberFormat.format(received)}`;
+}
+
 function updateRegisterSummary() {
   const pledged = editingMembers.reduce((total, member) => total + member.amount, 0);
   const received = editingMembers.reduce((total, member) => total + member.received, 0);
@@ -304,17 +371,23 @@ function updateRegisterSummary() {
   document.querySelector("#received-total").textContent = `₹${numberFormat.format(received)}`;
 }
 
-function applyEventYear() {
-  document.querySelector("#page-title").textContent = `Chhath Puja ${eventYear} · Karkatta`;
-  document.querySelector('meta[name="description"]').content = `The Karkatta Chhath Puja ${eventYear} community page, photo gallery and member contribution register.`;
+function applyEventSettings() {
+  document.querySelector("#page-title").textContent = `${eventTitle} ${eventYear} · Karkatta`;
+  document.querySelector('meta[name="description"]').content = `The Karkatta ${eventTitle} ${eventYear} community page, photo gallery and member contribution register.`;
+  document.querySelector(".brand").setAttribute("aria-label", `${eventTitle} Karkatta home`);
+  document.querySelector("#brand-event-title").textContent = eventTitle;
   document.querySelector("#brand-event-year").textContent = `KARKATTA · ${eventYear}`;
+  document.querySelector("#hero-event-title").textContent = eventTitle;
   document.querySelector("#hero-year").textContent = String(eventYear);
+  document.querySelector("#hero-event-label").textContent = eventTitle;
   document.querySelector("#hero-event-year").textContent = String(eventYear);
-  document.querySelector("#register-panel-title").textContent = `Members register · ${eventYear}`;
+  document.querySelector("#register-panel-title").textContent = `${eventTitle} members register · ${eventYear}`;
   document.querySelector("#carry-forward-label").textContent = `${eventYear - 1} carry-forward`;
   document.querySelector("#carry-forward-note").textContent = `not included in ${eventYear} totals`;
-  document.querySelector(".register-footnote").textContent = `Source: attached Chhath Puja ${eventYear} register. The ${eventYear - 1} fund balance is shown separately.`;
-  document.querySelector("#footer-event-year").textContent = `CHHATH PUJA · ${eventYear}`;
+  document.querySelector(".register-footnote").textContent = `Source: attached ${eventTitle} ${eventYear} register. The ${eventYear - 1} fund balance is shown separately.`;
+  document.querySelector("#footer-event-year").textContent = `${eventTitle.toUpperCase()} · ${eventYear}`;
+  eventTitleInput.value = eventTitle;
+  eventYearInput.value = String(eventYear);
 }
 
 function openEditor() {
@@ -331,7 +404,7 @@ function openEditor() {
 
 function prepareEditor() {
   editingMembers = members.map((member) => ({ ...member }));
-  eventYearInput.value = String(eventYear);
+  applyEventSettings();
   renderEditor();
   editorStatus.textContent = "Changes are not saved until you select Save.";
   editorStatus.classList.remove("is-error");
@@ -352,6 +425,7 @@ loginForm.addEventListener("submit", async (event) => {
   try {
     const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method: "POST",
+      cache: "no-store",
       headers: {
         apikey: SUPABASE_PUBLISHABLE_KEY,
         "Content-Type": "application/json",
@@ -422,11 +496,6 @@ editorRows.addEventListener("input", (event) => {
   updateRegisterSummary();
 });
 
-eventYearInput.addEventListener("input", () => {
-  editorStatus.textContent = "Unsaved changes";
-  editorStatus.classList.remove("is-error");
-});
-
 function renderEditorTotals() {
   const pledged = editingMembers.reduce((total, member) => total + member.amount, 0);
   const received = editingMembers.reduce((total, member) => total + member.received, 0);
@@ -465,28 +534,17 @@ addMemberButton.addEventListener("click", () => {
 });
 
 saveMembersButton.addEventListener("click", async () => {
-  const invalidInput = editorContent.querySelector(":invalid");
+  const invalidInput = editorRows.querySelector(":invalid");
   if (invalidInput) {
     invalidInput.reportValidity();
-    editorStatus.textContent = invalidInput === eventYearInput
-      ? "Enter a valid celebration year between 1 and 9999."
-      : "Correct the highlighted amount before saving.";
-    editorStatus.classList.add("is-error");
-    return;
-  }
-  const nextYear = Number(eventYearInput.value);
-  if (!isValidYear(nextYear)) {
-    eventYearInput.setCustomValidity("Enter a year between 1 and 9999.");
-    eventYearInput.reportValidity();
-    eventYearInput.setCustomValidity("");
-    editorStatus.textContent = "Enter a valid celebration year between 1 and 9999.";
+    editorStatus.textContent = "Correct the highlighted member details before saving.";
     editorStatus.classList.add("is-error");
     return;
   }
   saveMembersButton.disabled = true;
   editorStatus.textContent = "Saving shared register…";
   try {
-    await saveSharedRegister(editingMembers, nextYear);
+    await saveSharedRegister(editingMembers, eventYear, eventTitle);
   } catch (error) {
     editorStatus.textContent = error.message || "Unable to save the shared register.";
     editorStatus.classList.add("is-error");
@@ -494,14 +552,55 @@ saveMembersButton.addEventListener("click", async () => {
   } finally {
     saveMembersButton.disabled = false;
   }
-  saveLocalRegister(editingMembers, nextYear);
+  saveLocalRegister(editingMembers, eventYear, eventTitle);
   members = editingMembers.map((member) => ({ ...member }));
-  eventYear = nextYear;
-  applyEventYear();
+  applyEventSettings();
   renderEditor();
+  renderPublicRegister();
   editorStatus.textContent = "Changes saved successfully for everyone.";
   editorStatus.classList.remove("is-error");
   setSaveStatus("Shared register updated successfully.");
+});
+
+eventTitleInput.addEventListener("input", () => {
+  document.querySelector("#settings-status").textContent = "Unsaved site details";
+  document.querySelector("#settings-status").classList.remove("is-error");
+});
+eventYearInput.addEventListener("input", () => {
+  document.querySelector("#settings-status").textContent = "Unsaved site details";
+  document.querySelector("#settings-status").classList.remove("is-error");
+});
+
+saveEventSettingsButton.addEventListener("click", async () => {
+  const title = eventTitleInput.value.trim();
+  const year = Number(eventYearInput.value);
+  if (!title || !eventTitleInput.validity.valid) {
+    eventTitleInput.reportValidity();
+    return;
+  }
+  if (!isValidYear(year) || !eventYearInput.validity.valid) {
+    eventYearInput.reportValidity();
+    return;
+  }
+  saveEventSettingsButton.disabled = true;
+  const settingsStatus = document.querySelector("#settings-status");
+  settingsStatus.textContent = "Saving site details…";
+  settingsStatus.classList.remove("is-error");
+  try {
+    await saveSharedRegister(members, year, title);
+  } catch (error) {
+    settingsStatus.textContent = error.message || "Unable to save site details.";
+    settingsStatus.classList.add("is-error");
+    return;
+  } finally {
+    saveEventSettingsButton.disabled = false;
+  }
+  eventTitle = title;
+  eventYear = year;
+  saveLocalRegister(members, eventYear, eventTitle);
+  applyEventSettings();
+  renderPublicRegister();
+  settingsStatus.textContent = "Site details updated across the page.";
 });
 
 closeLoginButton.addEventListener("click", () => editorDialog.close());
@@ -532,8 +631,19 @@ editorDialog.addEventListener("close", () => {
   loginForm.reset();
 });
 
-document.querySelector("#export-pdf").addEventListener("click", () => {
+function exportRegisterPdf(data = members, year = eventYear, title = eventTitle) {
+  renderPublicRegister(data, year, title);
+  document.body.classList.add("print-register");
   window.print();
+}
+
+document.querySelector("#public-export-pdf").addEventListener("click", () => exportRegisterPdf());
+document.querySelector("#export-pdf").addEventListener("click", () =>
+  exportRegisterPdf(editingMembers, eventYear, eventTitle)
+);
+window.addEventListener("afterprint", () => {
+  document.body.classList.remove("print-register");
+  renderPublicRegister();
 });
 
 const mediaGrid = document.querySelector("#media-grid");
@@ -635,7 +745,8 @@ window.addEventListener("beforeunload", () => {
   for (const url of mediaUrls) URL.revokeObjectURL(url);
 });
 
-applyEventYear();
+applyEventSettings();
+renderPublicRegister();
 loadSharedRegister();
 
 document.addEventListener("visibilitychange", () => {

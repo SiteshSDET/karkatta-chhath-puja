@@ -6,7 +6,8 @@
     <meta name="theme-color" content="#762c25">
     <meta name="description" content="The Karkatta Chhath Puja community page, photo gallery and member contribution register.">
     <title id="page-title">Chhath Puja 2026 · Karkatta</title>
-    <link rel="stylesheet" href="styles.css?v=20261113">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <link rel="stylesheet" href="styles.css?v=__BUILD_SHA__">
   </head>
   <body>
     <header class="site-header">
@@ -17,7 +18,7 @@
             <path d="M8 28c3.1-3.1 6.9-4.7 12-4.7s8.9 1.6 12 4.7M5 33c3.9-2.2 8.9-3.3 15-3.3s11.1 1.1 15 3.3M20 2v3M5.9 7.1 8 9.2m24-2.1L30 9.2M3 17h4m26 0h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </span>
-        <span class="brand-copy"><strong>Chhath Puja</strong><small id="brand-event-year">KARKATTA · 2026</small></span>
+        <span class="brand-copy"><strong id="brand-event-title">Chhath Puja</strong><small id="brand-event-year">KARKATTA · 2026</small></span>
       </a>
       <nav class="main-nav" aria-label="Main navigation">
         <a href="#gallery">Gallery</a>
@@ -40,7 +41,7 @@
         </div>
         <div class="hero-content">
           <span class="eyebrow"><span class="eyebrow-dot"></span> A KARKATTA COMMUNITY CELEBRATION</span>
-          <h1 id="hero-title">Chhath Puja <span id="hero-year">2026</span></h1>
+          <h1 id="hero-title"><span id="hero-event-title">Chhath Puja</span> <span id="hero-year">2026</span></h1>
           <p class="hero-description">Together in devotion. Together in gratitude.<br>Celebrating the beauty of Chhath in Karkatta.</p>
           <div class="hero-details">
             <span>
@@ -50,11 +51,38 @@
             <span class="detail-divider" aria-hidden="true"></span>
             <span>
               <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4.5" width="14" height="13" rx="2"/><path d="M6.5 2.5v4M13.5 2.5v4M3 8.5h14"/></svg>
-              Chhath Puja · <span id="hero-event-year">2026</span>
+              <span id="hero-event-label">Chhath Puja</span> · <span id="hero-event-year">2026</span>
             </span>
           </div>
         </div>
         <div class="hero-caption" aria-hidden="true">ARAGHYA · GRATITUDE · TOGETHERNESS</div>
+      </section>
+
+      <section id="members-section" class="content-section public-register" aria-labelledby="public-register-title">
+        <div class="section-heading register-heading">
+          <div>
+            <span class="section-kicker">COMMUNITY CONTRIBUTIONS</span>
+            <h2 id="public-register-title">Members register · 2026</h2>
+            <p class="section-description">Community contributions for this celebration.</p>
+          </div>
+          <button id="public-export-pdf" class="button button-primary" type="button">Export PDF</button>
+        </div>
+        <div class="register-summary" aria-label="Contribution totals">
+          <article class="summary-card"><span>Members</span><strong id="public-member-total">52</strong><small>in the register</small></article>
+          <article class="summary-card"><span>Total pledged</span><strong id="public-pledged-total">₹9,107</strong><small>as recorded</small></article>
+          <article class="summary-card summary-card-accent"><span>Received</span><strong id="public-received-total">₹3,407</strong><small>contributions collected</small></article>
+          <article class="summary-card"><span id="public-carry-forward-label">2025 carry-forward</span><strong>₹2,000</strong><small id="public-carry-forward-note">not included in totals</small></article>
+        </div>
+        <div class="table-scroll public-table-scroll">
+          <table class="member-table public-member-table">
+            <thead>
+              <tr><th scope="col" class="number-column">No.</th><th scope="col">Member</th><th scope="col" class="amount-column">Pledged (₹)</th><th scope="col" class="paid-column">Paid</th><th scope="col" class="amount-column">Received (₹)</th></tr>
+            </thead>
+            <tbody id="public-member-rows"></tbody>
+            <tfoot><tr><th scope="row" colspan="2">Total</th><td id="public-table-pledged">₹9,107</td><td></td><td id="public-table-received">₹3,407</td></tr></tfoot>
+          </table>
+        </div>
+        <p class="register-footnote">The previous year's balance is shown separately.</p>
       </section>
 
       <section id="gallery" class="content-section gallery-section" aria-labelledby="gallery-title">
@@ -63,11 +91,20 @@
             <span class="section-kicker">MOMENTS TO REMEMBER</span>
             <h2 id="gallery-title">Our celebration</h2>
           </div>
-          <span class="section-aside">Photos &amp; videos</span>
+          <span class="section-aside">Photos &amp; videos from Karkatta</span>
         </div>
-        <div class="gallery-empty">
-          <span class="upload-icon" aria-hidden="true">☼</span>
-          <p>Photos and videos from our celebration will appear here.</p>
+        <div id="gallery-cards" class="gallery-cards" aria-live="polite">
+          <article class="gallery-card gallery-photo-card">
+            <img src="assets/chhath-sample-photo.svg" alt="Illustrated Chhath offerings by the river at sunset">
+            <div class="gallery-card-copy"><span class="gallery-tag">SAMPLE PHOTO</span><h3>Evening Arghya</h3><p>A sample illustration for the Karkatta celebration gallery.</p></div>
+          </article>
+          <article class="gallery-card gallery-video-card">
+            <video controls preload="metadata" poster="assets/chhath-sample-video-poster.svg" aria-label="Sample Chhath celebration video">
+              <source src="assets/chhath-sample-video.mp4" type="video/mp4">
+              Your browser does not support video playback.
+            </video>
+            <div class="gallery-card-copy"><span class="gallery-tag">SAMPLE VIDEO</span><h3>Sunset by the river</h3><p>A short, locally hosted sample clip. Replace with community moments in Manager.</p></div>
+          </article>
         </div>
         <div id="media-grid" class="media-grid" aria-live="polite"></div>
       </section>
@@ -102,14 +139,12 @@
         </div>
         <nav class="manager-tabs" aria-label="Manager sections">
           <button class="manager-tab is-active" type="button" data-manager-tab="register" aria-selected="true">Members register</button>
+          <button class="manager-tab" type="button" data-manager-tab="settings" aria-selected="false">Site details</button>
           <button class="manager-tab" type="button" data-manager-tab="media" aria-selected="false">Photos &amp; videos</button>
         </nav>
         <section class="manager-panel" data-manager-panel="register" aria-labelledby="register-panel-title">
           <div class="manager-panel-heading">
             <h3 id="register-panel-title">Members register</h3>
-            <label class="event-year-field">Celebration year
-              <input id="event-year" class="member-input" type="number" min="1" max="9999" step="1" required>
-            </label>
           </div>
           <div class="register-summary" aria-label="Contribution totals">
             <article class="summary-card"><span>Members</span><strong id="member-total">52</strong><small>in the register</small></article>
@@ -136,6 +171,21 @@
           </div>
           <p class="register-footnote">Source: attached Chhath Puja register. The previous year's carry-forward is shown separately.</p>
         </section>
+        <section class="manager-panel" data-manager-panel="settings" aria-labelledby="settings-panel-title" hidden>
+          <div class="manager-panel-heading">
+            <div><h3 id="settings-panel-title">Site details</h3><p>Update the event name and year shown across the site.</p></div>
+          </div>
+          <div class="settings-form">
+            <label>Celebration title
+              <input id="event-title" class="settings-input" type="text" maxlength="60" required>
+            </label>
+            <label>Celebration year
+              <input id="event-year" class="settings-input" type="number" min="1" max="9999" step="1" required>
+            </label>
+            <button id="save-event-settings" class="button button-primary" type="button">Save site details</button>
+            <p id="settings-status" class="editor-status" role="status" aria-live="polite">Updates appear across the site after you save.</p>
+          </div>
+        </section>
         <section class="manager-panel" data-manager-panel="media" aria-labelledby="media-panel-title" hidden>
           <div class="manager-panel-heading">
             <div><h3 id="media-panel-title">Manage photos &amp; videos</h3><p>Select images or videos to preview them in the gallery.</p></div>
@@ -160,6 +210,6 @@
       <span id="footer-event-year" class="footer-year">CHHATH PUJA · 2026</span>
     </footer>
 
-    <script src="app.js?v=20261113"></script>
+    <script src="app.js?v=__BUILD_SHA__"></script>
   </body>
 </html>
