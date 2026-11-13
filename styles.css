@@ -592,10 +592,11 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
   .accounts-table { display: block; width: 100%; }
   .accounts-table thead { display: none; }
   .accounts-table tbody { display: grid; gap: 8px; }
-  .accounts-table tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px 10px; padding: 11px; border: 1px solid #dce8df; border-radius: 11px; background: #fff; }
-  .accounts-table tbody td { height: auto; min-width: 0; padding: 0; display: grid; gap: 3px; border: 0; text-align: left !important; overflow-wrap: anywhere; }
-  .accounts-table tbody td::before { content: attr(data-label); color: var(--muted); font-size: 9px; font-weight: 600; }
-  .accounts-table tbody td:nth-child(2) { grid-column: 1 / -1; font-weight: 700; }
+  .accounts-table tbody tr { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 11px; border: 1px solid #dce8df; border-radius: 11px; background: #fff; }
+  .accounts-table tbody td { width: 100%; height: auto; min-width: 0; padding: 0; display: grid; grid-template-columns: minmax(90px, 30%) minmax(0, 1fr); align-items: baseline; gap: 8px; border: 0; text-align: left !important; overflow-wrap: normal; word-break: normal; }
+  .accounts-table tbody td::before { content: attr(data-label); color: var(--muted); font-size: 9px; font-weight: 600; white-space: nowrap; }
+  .accounts-table .accounts-date-value, .accounts-table .accounts-amount-value { white-space: nowrap; }
+  .accounts-table tbody td:nth-child(2) .accounts-value { font-weight: 700; overflow-wrap: anywhere; }
   .accounts-table tfoot { display: none; }
   .public-register .register-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0; }
   .public-register .summary-card { min-width: 0; min-height: 87px; padding: 11px; border-radius: 12px; }
