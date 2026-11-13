@@ -587,6 +587,7 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
   .accounts-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0; }
   .account-card { min-height: 87px; padding: 11px; border-radius: 12px; }
   .account-card > strong { font-size: 18px; }
+  .accounts-details-toggle { width: 100%; white-space: normal; }
   .accounts-details { padding: 8px; }
   .accounts-table { display: block; width: 100%; }
   .accounts-table thead { display: none; }
