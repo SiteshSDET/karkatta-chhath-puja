@@ -90,7 +90,7 @@ Celebrating the beauty of Chhath in Karkatta.</p>
           <article class="summary-card"><span>Members</span><strong id="public-member-total">52</strong><small>in the register</small></article>
           <article class="summary-card"><span>Total pledged</span><strong id="public-pledged-total">₹9,107</strong><small>as recorded</small></article>
           <article class="summary-card summary-card-accent"><span>Received</span><strong id="public-received-total">₹3,407</strong><small>contributions collected</small></article>
-          <article class="summary-card"><span id="public-carry-forward-label">2025 carry-forward</span><strong>₹2,000</strong><small id="public-carry-forward-note">not included in totals</small></article>
+          <article class="summary-card"><span id="public-carry-forward-label">2025 carry-forward</span><strong id="public-carry-forward-amount">₹2,000</strong><small id="public-carry-forward-note">included in Hisab balance</small></article>
         </div>
         <label class="search-box public-member-search">
           <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.7" cy="8.7" r="5.7"/><path d="m13 13 4 4"/></svg>
@@ -127,8 +127,9 @@ Celebrating the beauty of Chhath in Karkatta.</p>
         <p id="accounts-status" class="pdf-status" role="status" aria-live="polite"></p>
         <div class="accounts-summary" aria-label="Hisab totals">
           <article class="account-card account-collection"><span>Total collected</span><strong id="account-collected">₹0</strong><small>received in the member register</small></article>
+          <article class="account-card account-carry-forward"><span id="accounts-carry-forward-year-label">2025 carry-forward</span><strong id="account-carry-forward">₹2,000</strong><small>added to calculate balance</small></article>
           <article class="account-card account-expenses"><span>Total expenditure</span><strong id="account-expenditure">₹0</strong><small>recorded expenses</small></article>
-          <article class="account-card account-balance"><span>Balance</span><strong id="account-balance">₹0</strong><small>collection minus expenditure</small></article>
+          <article class="account-card account-balance"><span>Balance</span><strong id="account-balance">₹2,000</strong><small>carry-forward + collection − expenditure</small></article>
         </div>
         <button id="accounts-details-toggle" class="button button-outline accounts-details-toggle" type="button" aria-expanded="false" aria-controls="accounts-details">
           View expenditure details
@@ -216,7 +217,7 @@ Celebrating the beauty of Chhath in Karkatta.</p>
             <article class="summary-card"><span>Members</span><strong id="member-total">52</strong><small>in the register</small></article>
             <article class="summary-card"><span>Total pledged</span><strong id="pledged-total">₹9,107</strong><small>as recorded</small></article>
             <article class="summary-card summary-card-accent"><span>Received</span><strong id="received-total">₹3,407</strong><small>contributions collected</small></article>
-            <article class="summary-card"><span id="carry-forward-label">2025 carry-forward</span><strong>₹2,000</strong><small id="carry-forward-note">not included in totals</small></article>
+            <article class="summary-card"><span id="carry-forward-label">2025 carry-forward</span><strong id="carry-forward-amount">₹2,000</strong><small id="carry-forward-note">included in Hisab balance</small></article>
           </div>
           <div class="manager-actions">
             <label class="search-box">
@@ -321,8 +322,14 @@ Celebrating the beauty of Chhath in Karkatta.</p>
           </div>
           <div class="manager-register-summary">
             <article class="summary-card summary-card-accent"><span>Collected from members</span><strong id="manager-account-collected">₹0</strong><small>current register received total</small></article>
+            <article class="summary-card"><span id="manager-carry-forward-summary-label">2025 carry-forward</span><strong id="manager-account-carry-forward">₹2,000</strong><small>added to current-year balance</small></article>
             <article class="summary-card"><span>Expenditure</span><strong id="manager-account-expenditure">₹0</strong><small id="manager-account-year-label">in 2026</small></article>
-            <article class="summary-card"><span>Balance</span><strong id="manager-account-balance">₹0</strong><small>collection minus expenditure</small></article>
+            <article class="summary-card"><span>Balance</span><strong id="manager-account-balance">₹2,000</strong><small>carry-forward + collection − expenditure</small></article>
+          </div>
+          <div class="carry-forward-editor">
+            <label id="manager-carry-forward-label" for="manager-carry-forward">2025 carry-forward (₹)</label>
+            <input id="manager-carry-forward" class="settings-input" type="number" min="0" step="0.01" value="2000" inputmode="decimal" required>
+            <p>Enter the amount remaining from the previous year. It is included in this year's balance.</p>
           </div>
           <div class="expense-entry-form">
             <label>Expenditure on
@@ -346,9 +353,9 @@ Celebrating the beauty of Chhath in Karkatta.</p>
             </table>
           </div>
           <div class="manager-actions expense-actions">
-            <button id="save-expenses" class="button button-primary" type="button">Save expenditures</button>
+            <button id="save-expenses" class="button button-primary" type="button">Save Hisab</button>
           </div>
-          <p id="expense-status" class="editor-status" role="status" aria-live="polite">Expenditure changes are not saved until you select Save expenditures.</p>
+          <p id="expense-status" class="editor-status" role="status" aria-live="polite">Hisab changes are not saved until you select Save Hisab.</p>
         </section>
       </div>
     </dialog>

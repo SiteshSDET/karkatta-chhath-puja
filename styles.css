@@ -264,7 +264,7 @@ button { color: inherit; }
 .accounts-year-control { width: 110px; display: grid; gap: 5px; padding: 10px; border: 1px solid #cfe2d7; border-radius: 12px; background: #ffffffc9; color: #386652; font-size: 9px; font-weight: 800; }
 .accounts-year-control .settings-input { height: 36px; border-color: #cfe2d7; border-radius: 8px; color: #285d46; font-size: 13px; font-weight: 700; }
 .accounts-actions { max-width: 430px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
-.accounts-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 23px 0 17px; }
+.accounts-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 23px 0 17px; }
 .account-card { position: relative; min-width: 0; min-height: 116px; display: grid; align-content: start; gap: 6px; padding: 17px; overflow: hidden; border: 1px solid #dce8df; border-top: 3px solid #378466; border-radius: 15px; background: linear-gradient(145deg, #fff, #eff9f3); box-shadow: 0 8px 20px #244b3a0c; }
 .account-card::after { position: absolute; right: -17px; bottom: -27px; width: 76px; height: 76px; border: 11px solid #ffffff80; border-radius: 50%; content: ""; pointer-events: none; }
 .account-card > span, .account-card > strong, .account-card > small { position: relative; z-index: 1; }
@@ -273,6 +273,8 @@ button { color: inherit; }
 .account-card > small { color: #85938b; font-size: 9px; }
 .account-expenses { border-color: #f0ddc4; border-top-color: #d18432; background: linear-gradient(145deg, #fff, #fff7eb); }
 .account-expenses > strong { color: #a15b24; }
+.account-carry-forward { border-color: #d6e8df; border-top-color: #4a9a72; background: linear-gradient(145deg, #fff, #f0faf4); }
+.account-carry-forward > strong { color: #28664d; }
 .account-balance { border-color: #d9e1ef; border-top-color: #687fac; background: linear-gradient(145deg, #fff, #f3f5fc); }
 .account-balance > strong { color: #4a5e88; }
 .account-balance > strong.is-negative { color: #b13630; }
@@ -508,8 +510,12 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
 .manager-panel[data-manager-panel="member-photos"] .manager-panel-heading h3 { color: #28664d; }
 .manager-panel[data-manager-panel="media"] .manager-panel-heading h3 { color: #5c4387; }
 .manager-panel[data-manager-panel="media"] .gallery-manager-controls { padding: 14px; border: 1px solid #e4dcef; border-radius: 13px; background: #ffffffb8; }
-.manager-register-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 18px 0; }
+.manager-register-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 18px 0; }
 .manager-register-summary .summary-card { min-width: 0; min-height: 94px; border-radius: 13px; }
+.carry-forward-editor { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(140px, 220px); align-items: center; gap: 6px 12px; margin: 0 0 16px; padding: 14px; border: 1px solid #d6e8df; border-radius: 12px; background: #f4fbf6; }
+.carry-forward-editor label { color: #28664d; font-size: 11px; font-weight: 700; }
+.carry-forward-editor .settings-input { width: 100%; border-color: #cfe2d7; border-radius: 8px; }
+.carry-forward-editor p { grid-column: 1 / -1; margin: 0; color: #71847a; font-size: 10px; }
 .expense-entry-form { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(110px, .8fr) minmax(145px, 1fr) minmax(100px, .65fr) auto; align-items: end; gap: 10px; margin: 17px 0; padding: 15px; border: 1px solid #eadfd2; border-radius: 13px; background: #fffaf3; }
 .expense-entry-form label { min-width: 0; display: grid; gap: 6px; color: var(--muted); font-size: 10px; font-weight: 700; }
 .expense-entry-form .settings-input { min-width: 0; border-radius: 8px; }
@@ -637,6 +643,8 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
   .manager-panel-heading h3 { font-size: 18px; }
   .manager-register-summary { grid-template-columns: 1fr; gap: 7px; }
   .manager-register-summary .summary-card { min-height: 78px; }
+  .carry-forward-editor { grid-template-columns: 1fr; gap: 7px; padding: 11px; }
+  .carry-forward-editor p { grid-column: auto; }
   .expense-entry-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; padding: 11px; }
   .expense-entry-form label:first-child { grid-column: 1 / -1; }
   .expense-entry-form .button { grid-column: 1 / -1; width: 100%; }

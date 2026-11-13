@@ -106,6 +106,7 @@ const expensePartInput = document.querySelector("#expense-part");
 const expenseAmountInput = document.querySelector("#expense-amount");
 const expenseDateInput = document.querySelector("#expense-date");
 const expenseYearInput = document.querySelector("#expense-year");
+const carryForwardInput = document.querySelector("#manager-carry-forward");
 const expenseRows = document.querySelector("#expense-rows");
 const expenseStatus = document.querySelector("#expense-status");
 const saveExpensesButton = document.querySelector("#save-expenses");
@@ -114,6 +115,7 @@ const accountsStatus = document.querySelector("#accounts-status");
 const managerSignoutButton = document.querySelector("#manager-signout");
 const numberFormat = new Intl.NumberFormat("en-IN");
 const BASE_YEAR = 2026;
+const DEFAULT_CARRY_FORWARD = 2000;
 const loadedRegister = loadRegister();
 let members = loadedRegister.members;
 let eventYear = loadedRegister.year;
@@ -124,7 +126,9 @@ let heroCaption = loadedRegister.heroCaption;
 let heroImagePath = loadedRegister.heroImagePath;
 let galleryMedia = loadedRegister.galleryMedia;
 let financeExpenses = loadedRegister.financeExpenses;
+let financeCarryForward = loadedRegister.financeCarryForward;
 let editingExpenses = [];
+let editingFinanceCarryForward = financeCarryForward;
 let editingMembers = [];
 let authSession = null;
 let mediaAuthorized = false;
@@ -183,6 +187,10 @@ function validFinanceExpenses(value) {
   );
 }
 
+function validCarryForward(value) {
+  return Number.isFinite(value) && value >= 0;
+}
+
 function loadRegister() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -197,6 +205,7 @@ function loadRegister() {
         heroImagePath: null,
         galleryMedia: [],
         financeExpenses: [],
+        financeCarryForward: DEFAULT_CARRY_FORWARD,
       };
     }
     const parsed = JSON.parse(saved);
@@ -212,6 +221,7 @@ function loadRegister() {
         heroImagePath: null,
         galleryMedia: [],
         financeExpenses: [],
+        financeCarryForward: DEFAULT_CARRY_FORWARD,
       };
     }
     if (!parsed || !isValidMembers(parsed.members) || !isValidYear(parsed.year)) {
@@ -226,6 +236,7 @@ function loadRegister() {
       heroImagePath: typeof parsed.heroImagePath === "string" ? parsed.heroImagePath : null,
       galleryMedia: validGalleryMedia(parsed.galleryMedia) ? parsed.galleryMedia : [],
       financeExpenses: validFinanceExpenses(parsed.financeExpenses) ? parsed.financeExpenses : [],
+      financeCarryForward: validCarryForward(parsed.financeCarryForward) ? parsed.financeCarryForward : DEFAULT_CARRY_FORWARD,
     };
   } catch (error) {
     setSaveStatus("Could not load saved edits; showing the original register.", true);
@@ -239,6 +250,7 @@ function loadRegister() {
       heroImagePath: null,
       galleryMedia: [],
       financeExpenses: [],
+      financeCarryForward: DEFAULT_CARRY_FORWARD,
     };
   }
 }
@@ -262,6 +274,7 @@ function saveLocalRegister(value, year, title) {
       heroImagePath,
       galleryMedia,
       financeExpenses,
+      financeCarryForward,
     }));
     return true;
   } catch (error) {
@@ -401,7 +414,7 @@ async function loadSharedRegister(useLegacySchema = false, requestId = null, sta
     ? "members,event_year"
     : useLegacySchema
       ? "members,event_year,event_title"
-      : `members,event_year,event_title,hero_eyebrow,hero_description,hero_caption,hero_image_path,gallery_media${includeFinance ? ",finance_expenses" : ""}`;
+      : `members,event_year,event_title,hero_eyebrow,hero_description,hero_caption,hero_image_path,gallery_media${includeFinance ? ",finance_expenses,finance_carry_forward" : ""}`;
   try {
     const response = await fetch(
       `${SUPABASE_URL}/rest/v1/shared_register?id=eq.${encodeURIComponent(SHARED_REGISTER_ID)}&select=${select}`,
@@ -439,7 +452,7 @@ async function loadSharedRegister(useLegacySchema = false, requestId = null, sta
       typeof register.hero_caption !== "string" ||
       (register.hero_image_path !== null && typeof register.hero_image_path !== "string") ||
       !validGalleryMedia(register.gallery_media) ||
-      (includeFinance && !validFinanceExpenses(register.finance_expenses))
+      (includeFinance && (!validFinanceExpenses(register.finance_expenses) || !validCarryForward(register.finance_carry_forward)))
     )) {
       throw new Error("The shared site settings are invalid. Run the updated Supabase setup SQL.");
     }
@@ -454,6 +467,7 @@ async function loadSharedRegister(useLegacySchema = false, requestId = null, sta
     heroImagePath = useLegacySchema ? null : register.hero_image_path;
     galleryMedia = useLegacySchema ? [] : register.gallery_media;
     financeExpenses = useLegacySchema || !includeFinance ? [] : register.finance_expenses;
+    if (includeFinance) financeCarryForward = register.finance_carry_forward;
     supportsSharedFinance = !useLegacySchema && !legacyOnly && includeFinance;
     saveLocalRegister(members, eventYear, eventTitle);
     applyEventSettings();
@@ -471,7 +485,7 @@ async function loadSharedRegister(useLegacySchema = false, requestId = null, sta
     return true;
   } catch (error) {
     if (requestId !== sharedLoadSequence) return false;
-    if (!useLegacySchema && !legacyOnly && includeFinance && /finance_expenses/i.test(error.message || "")) {
+    if (!useLegacySchema && !legacyOnly && includeFinance && /finance_expenses|finance_carry_forward/i.test(error.message || "")) {
       supportsSharedFinance = false;
       return loadSharedRegister(false, requestId, statusTarget, false);
     }
@@ -511,6 +525,7 @@ managerRefreshButton.addEventListener("click", async () => {
   }
   const hasUnsavedChanges = editorStatus.textContent.includes("Unsaved changes") ||
     JSON.stringify(editingExpenses) !== JSON.stringify(financeExpenses) ||
+    editingFinanceCarryForward !== financeCarryForward ||
     eventTitleInput.value.trim() !== eventTitle ||
     Number(eventYearInput.value) !== eventYear ||
     heroEyebrowInput.value !== heroEyebrow ||
@@ -571,6 +586,7 @@ async function saveSharedRegister(
         gallery_media: galleryMedia,
       } : {}),
       ...(includeFinance ? { finance_expenses: financeExpenses } : {}),
+      ...(includeFinance ? { finance_carry_forward: financeCarryForward } : {}),
     }),
   });
   try {
@@ -583,7 +599,7 @@ async function saveSharedRegister(
       }
       return saveSharedRegister(value, year, title, false, includeSiteSettings, requireSiteSettings, includeFinance, requireFinance);
     }
-    if (includeFinance && /finance_expenses/i.test(error.message || "")) {
+    if (includeFinance && /finance_expenses|finance_carry_forward/i.test(error.message || "")) {
       supportsSharedFinance = false;
       if (requireFinance) {
         throw new Error("Run the updated supabase-setup.sql to enable shared Hisab.");
@@ -728,7 +744,8 @@ function renderPublicRegister(data = members, year = eventYear, title = eventTit
   document.querySelector("#public-pledged-total").textContent = `₹${numberFormat.format(pledged)}`;
   document.querySelector("#public-received-total").textContent = `₹${numberFormat.format(received)}`;
   document.querySelector("#public-carry-forward-label").textContent = `${year - 1} carry-forward`;
-  document.querySelector("#public-carry-forward-note").textContent = `not included in ${year} totals`;
+  document.querySelector("#public-carry-forward-amount").textContent = `₹${numberFormat.format(financeCarryForward)}`;
+  document.querySelector("#public-carry-forward-note").textContent = `included in ${year} Hisab balance`;
   document.querySelector("#public-table-pledged").textContent = `₹${numberFormat.format(pledged)}`;
   document.querySelector("#public-table-received").textContent = `₹${numberFormat.format(received)}`;
   renderMemberCards(data);
@@ -750,8 +767,11 @@ function renderAccounts() {
   const expenditure = selectedExpenses.reduce((total, expense) => total + expense.amount, 0);
   const hasRegisterCollection = year === eventYear;
   const collected = hasRegisterCollection ? getReceivedTotal() : null;
-  const balance = collected === null ? null : collected - expenditure;
+  const carryForward = hasRegisterCollection ? financeCarryForward : null;
+  const balance = collected === null ? null : collected + carryForward - expenditure;
   document.querySelector("#accounts-year").textContent = String(year);
+  document.querySelector("#accounts-carry-forward-year-label").textContent = `${year - 1} carry-forward`;
+  document.querySelector("#account-carry-forward").textContent = carryForward === null ? "—" : `₹${numberFormat.format(carryForward)}`;
   document.querySelector("#account-collected").textContent = collected === null ? "—" : `₹${numberFormat.format(collected)}`;
   document.querySelector("#account-expenditure").textContent = `₹${numberFormat.format(expenditure)}`;
   document.querySelector("#account-balance").textContent = balance === null ? "—" : `₹${numberFormat.format(balance)}`;
@@ -775,10 +795,10 @@ function renderAccounts() {
   document.querySelector("#public-expense-rows").replaceChildren(fragment);
   document.querySelector("#public-expense-empty").hidden = selectedExpenses.length > 0;
   document.querySelector("#accounts-section .section-description").textContent = hasRegisterCollection
-    ? "Collections are calculated from member contributions received."
+    ? `Balance includes the ${year - 1} carry-forward, member receipts, and recorded expenditures.`
     : `Member collections are available for the current ${eventYear} register only.`;
   if (!supportsSharedFinance) {
-    accountsStatus.textContent = "Shared expenditure data needs the latest Supabase setup. Run supabase-setup.sql to enable this section.";
+    accountsStatus.textContent = "Shared Hisab data needs the latest Supabase setup. Run supabase-setup.sql to enable this section.";
     accountsStatus.classList.add("is-error");
   } else {
     accountsStatus.textContent = "";
@@ -948,13 +968,17 @@ function updateRegisterSummary() {
 
 function renderManagerExpenseTotals() {
   const collected = getReceivedTotal(editingMembers);
+  const carryForward = validCarryForward(editingFinanceCarryForward) ? editingFinanceCarryForward : 0;
   const expenditure = editingExpenses
     .filter((expense) => expense.year === eventYear)
     .reduce((total, expense) => total + expense.amount, 0);
   document.querySelector("#manager-account-collected").textContent = `₹${numberFormat.format(collected)}`;
+  document.querySelector("#manager-account-carry-forward").textContent = `₹${numberFormat.format(carryForward)}`;
   document.querySelector("#manager-account-expenditure").textContent = `₹${numberFormat.format(expenditure)}`;
   document.querySelector("#manager-account-year-label").textContent = `in ${eventYear}`;
-  document.querySelector("#manager-account-balance").textContent = `₹${numberFormat.format(collected - expenditure)}`;
+  document.querySelector("#manager-carry-forward-label").textContent = `${eventYear - 1} carry-forward (₹)`;
+  document.querySelector("#manager-carry-forward-summary-label").textContent = `${eventYear - 1} carry-forward`;
+  document.querySelector("#manager-account-balance").textContent = `₹${numberFormat.format(collected + carryForward - expenditure)}`;
 }
 
 function renderManagerExpenses() {
@@ -1029,12 +1053,14 @@ function applyEventSettings() {
   document.querySelector("#hero-event-year").textContent = String(eventYear);
   document.querySelector("#register-panel-title").textContent = `${eventTitle} members register ${eventYear}`;
   document.querySelector("#carry-forward-label").textContent = `${eventYear - 1} carry-forward`;
-  document.querySelector("#carry-forward-note").textContent = `not included in ${eventYear} totals`;
+  document.querySelector("#carry-forward-amount").textContent = `₹${numberFormat.format(financeCarryForward)}`;
+  document.querySelector("#carry-forward-note").textContent = `included in ${eventYear} Hisab balance`;
   document.querySelector(".register-footnote").textContent = `Source: attached ${eventTitle} ${eventYear} register. The ${eventYear - 1} fund balance is shown separately.`;
   document.querySelector("#footer-event-year").textContent = `${eventTitle.toUpperCase()} ${eventYear}`;
   eventTitleInput.value = eventTitle;
   eventYearInput.value = String(eventYear);
   expenseYearInput.value = String(eventYear);
+  carryForwardInput.value = String(editingFinanceCarryForward);
   heroEyebrowInput.value = heroEyebrow;
   heroDescriptionInput.value = heroDescription;
   heroCaptionInput.value = heroCaption;
@@ -1090,6 +1116,7 @@ loginForm.querySelectorAll("input").forEach((input) => {
 function prepareEditor() {
   editingMembers = members.map((member) => ({ ...member }));
   editingExpenses = financeExpenses.map((expense) => ({ ...expense }));
+  editingFinanceCarryForward = financeCarryForward;
   applyEventSettings();
   renderEditor();
   renderManagerExpenses();
@@ -1282,6 +1309,15 @@ function localDateValue(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
+carryForwardInput.addEventListener("input", () => {
+  if (carryForwardInput.validity.badInput) return;
+  const value = Number(carryForwardInput.value);
+  if (!validCarryForward(value)) return;
+  editingFinanceCarryForward = value;
+  renderManagerExpenseTotals();
+  setExpenseStatus("Unsaved Hisab changes.");
+});
+
 expenseDateInput.value = localDateValue();
 expenseYearInput.value = String(eventYear);
 document.querySelector("#add-expense").addEventListener("click", () => {
@@ -1351,6 +1387,15 @@ expenseRows.addEventListener("click", (event) => {
 });
 
 saveExpensesButton.addEventListener("click", async () => {
+  if (!carryForwardInput.reportValidity()) {
+    setExpenseStatus("Enter a valid carry-forward amount of zero or more.", true);
+    return;
+  }
+  const nextCarryForward = Number(carryForwardInput.value);
+  if (!validCarryForward(nextCarryForward)) {
+    setExpenseStatus("Enter a valid carry-forward amount of zero or more.", true);
+    return;
+  }
   const invalidInput = expenseRows.querySelector(":invalid");
   if (invalidInput) {
     invalidInput.reportValidity();
@@ -1366,22 +1411,26 @@ saveExpensesButton.addEventListener("click", async () => {
     return;
   }
   saveExpensesButton.disabled = true;
-  setExpenseStatus("Saving shared expenditures…");
+  setExpenseStatus("Saving shared Hisab…");
   const previousExpenses = financeExpenses;
+  const previousCarryForward = financeCarryForward;
   financeExpenses = editingExpenses.map((expense) => ({ ...expense }));
+  financeCarryForward = nextCarryForward;
   try {
     await saveSharedRegister(members, eventYear, eventTitle, supportsSharedEventTitle, supportsSharedSiteSettings, false, true, true);
   } catch (error) {
     financeExpenses = previousExpenses;
+    financeCarryForward = previousCarryForward;
     setExpenseStatus(error.message || "Unable to save expenditures.", true);
     return;
   } finally {
     saveExpensesButton.disabled = false;
   }
   saveLocalRegister(members, eventYear, eventTitle);
+  renderPublicRegister();
   renderAccounts();
   renderManagerExpenses();
-  setExpenseStatus("Expenditures saved and shared with everyone.");
+  setExpenseStatus("Hisab and carry-forward saved and shared with everyone.");
 });
 
 for (const input of [eventTitleInput, eventYearInput, heroEyebrowInput, heroDescriptionInput, heroCaptionInput]) {
@@ -1613,8 +1662,9 @@ function buildAccountsPdf(year, title, expenses) {
   const pageHeight = 595;
   const rowsPerPage = 22;
   const currentYearCollection = year === eventYear ? getReceivedTotal() : null;
+  const carryForward = year === eventYear ? financeCarryForward : null;
   const expenditure = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const balance = currentYearCollection === null ? null : currentYearCollection - expenditure;
+  const balance = currentYearCollection === null ? null : currentYearCollection + carryForward - expenditure;
   const pageCount = Math.max(1, Math.ceil(expenses.length / rowsPerPage));
   const objects = [
     "<< /Type /Catalog /Pages 2 0 R >>",
@@ -1639,15 +1689,16 @@ function buildAccountsPdf(year, title, expenses) {
     ];
     const summary = [
       ["COLLECTED", currentYearCollection === null ? "Not available" : `INR ${numberFormat.format(currentYearCollection)}`, "0.90 0.95 0.90"],
+      [`${year - 1} CARRY-FORWARD`, carryForward === null ? "Not available" : `INR ${numberFormat.format(carryForward)}`, "0.91 0.95 0.90"],
       ["EXPENDITURE", `INR ${numberFormat.format(expenditure)}`, "0.98 0.93 0.85"],
       ["BALANCE", balance === null ? "Not available" : `INR ${numberFormat.format(balance)}`, balance !== null && balance < 0 ? "0.98 0.89 0.87" : "0.91 0.95 0.90"],
       ["EXPENSE ITEMS", String(expenses.length), "0.92 0.90 0.97"],
     ];
     summary.forEach(([label, value, color], index) => {
-      const x = 38 + index * 192;
-      commands.push(rect(x, 464, 180, 43, color));
+      const x = 38 + index * 153;
+      commands.push(rect(x, 464, 145, 43, color));
       commands.push(text(label, x + 10, 490, 7, "0.38 0.34 0.30"));
-      commands.push(text(value, x + 10, 474, 11, "0.16 0.30 0.24"));
+      commands.push(text(value, x + 10, 474, 9, "0.16 0.30 0.24"));
     });
 
     const columns = [38, 142, 640, 804];

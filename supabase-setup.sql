@@ -15,7 +15,8 @@ alter table public.shared_register
   add column if not exists hero_caption text not null default 'ARAGHYA · GRATITUDE · TOGETHERNESS',
   add column if not exists hero_image_path text,
   add column if not exists gallery_media jsonb not null default '[]'::jsonb,
-  add column if not exists finance_expenses jsonb not null default '[]'::jsonb;
+  add column if not exists finance_expenses jsonb not null default '[]'::jsonb,
+  add column if not exists finance_carry_forward numeric not null default 2000 check (finance_carry_forward >= 0);
 
 insert into storage.buckets (id, name, public, file_size_limit)
 values ('karkatta-community', 'karkatta-community', true, null)
