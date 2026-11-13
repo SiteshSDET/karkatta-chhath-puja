@@ -2,7 +2,11 @@ const STORAGE_KEY = "chhath-puja-2026-members";
 const SUPABASE_URL = "https://qxxosdobwekiminhruse.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_QSWu8a0Hity972oLGMcACg_XttGKNCw";
 const SHARED_REGISTER_ID = "chhath-puja-2026";
+const MEDIA_BUCKET = "karkatta-community";
 const BASE_TITLE = "Chhath Puja";
+const DEFAULT_HERO_EYEBROW = "A KARKATTA COMMUNITY CELEBRATION";
+const DEFAULT_HERO_DESCRIPTION = "Together in devotion. Together in gratitude.\nCelebrating the beauty of Chhath in Karkatta.";
+const DEFAULT_HERO_CAPTION = "ARAGHYA · GRATITUDE · TOGETHERNESS";
 const ORIGINAL_MEMBERS = [
   ["Sudheep", 501, true, 501],
   ["Anil", 101, true, 101],
@@ -77,6 +81,12 @@ const editorContent = document.querySelector("#editor-content");
 const closeLoginButton = document.querySelector("#close-login");
 const eventYearInput = document.querySelector("#event-year");
 const eventTitleInput = document.querySelector("#event-title");
+const heroEyebrowInput = document.querySelector("#hero-eyebrow-input");
+const heroDescriptionInput = document.querySelector("#hero-description-input");
+const heroCaptionInput = document.querySelector("#hero-caption-input");
+const heroPhotoInput = document.querySelector("#hero-photo-input");
+const chooseHeroPhotoButton = document.querySelector("#choose-hero-photo");
+const removeHeroPhotoButton = document.querySelector("#remove-hero-photo");
 const addMemberButton = document.querySelector("#add-member");
 const saveMembersButton = document.querySelector("#save-members");
 const saveEventSettingsButton = document.querySelector("#save-event-settings");
@@ -86,6 +96,7 @@ const chooseMediaButton = document.querySelector("#choose-media");
 const memberPhotoSelect = document.querySelector("#member-photo-select");
 const memberPhotoInput = document.querySelector("#member-photo-input");
 const chooseMemberPhotoButton = document.querySelector("#choose-member-photo");
+const removeMemberPhotoButton = document.querySelector("#remove-member-photo");
 const memberPhotoStatus = document.querySelector("#member-photo-status");
 const managerSignoutButton = document.querySelector("#manager-signout");
 const numberFormat = new Intl.NumberFormat("en-IN");
@@ -94,11 +105,16 @@ const loadedRegister = loadRegister();
 let members = loadedRegister.members;
 let eventYear = loadedRegister.year;
 let eventTitle = loadedRegister.title;
+let heroEyebrow = loadedRegister.heroEyebrow;
+let heroDescription = loadedRegister.heroDescription;
+let heroCaption = loadedRegister.heroCaption;
+let heroImagePath = loadedRegister.heroImagePath;
+let galleryMedia = loadedRegister.galleryMedia;
 let editingMembers = [];
 let authSession = null;
 let mediaAuthorized = false;
 let supportsSharedEventTitle = true;
-const memberPhotoUrls = new Map();
+let supportsSharedSiteSettings = true;
 
 function isValidYear(value) {
   return Number.isInteger(value) && value >= 1 && value <= 9999;
@@ -113,7 +129,19 @@ function isValidMembers(value) {
     member.amount >= 0 &&
     typeof member.paid === "boolean" &&
     Number.isFinite(member.received) &&
-    member.received >= 0
+    member.received >= 0 &&
+    (member.photo_path === undefined || member.photo_path === null || typeof member.photo_path === "string")
+  );
+}
+
+function validGalleryMedia(value) {
+  return Array.isArray(value) && value.every((item) =>
+    item &&
+    typeof item.id === "string" &&
+    typeof item.name === "string" &&
+    typeof item.path === "string" &&
+    typeof item.type === "string" &&
+    (item.type.startsWith("image/") || item.type.startsWith("video/"))
   );
 }
 
@@ -121,20 +149,55 @@ function loadRegister() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved === null) {
-      return { members: ORIGINAL_MEMBERS.map((member) => ({ ...member })), year: BASE_YEAR, title: BASE_TITLE };
+      return {
+        members: ORIGINAL_MEMBERS.map((member) => ({ ...member })),
+        year: BASE_YEAR,
+        title: BASE_TITLE,
+        heroEyebrow: DEFAULT_HERO_EYEBROW,
+        heroDescription: DEFAULT_HERO_DESCRIPTION,
+        heroCaption: DEFAULT_HERO_CAPTION,
+        heroImagePath: null,
+        galleryMedia: [],
+      };
     }
     const parsed = JSON.parse(saved);
     if (Array.isArray(parsed)) {
       if (!isValidMembers(parsed)) throw new Error("Saved register has an invalid format.");
-      return { members: parsed, year: BASE_YEAR, title: BASE_TITLE };
+      return {
+        members: parsed,
+        year: BASE_YEAR,
+        title: BASE_TITLE,
+        heroEyebrow: DEFAULT_HERO_EYEBROW,
+        heroDescription: DEFAULT_HERO_DESCRIPTION,
+        heroCaption: DEFAULT_HERO_CAPTION,
+        heroImagePath: null,
+        galleryMedia: [],
+      };
     }
     if (!parsed || !isValidMembers(parsed.members) || !isValidYear(parsed.year)) {
       throw new Error("Saved register has an invalid format.");
     }
-    return { ...parsed, title: typeof parsed.title === "string" && parsed.title.trim() ? parsed.title : BASE_TITLE };
+    return {
+      ...parsed,
+      title: typeof parsed.title === "string" && parsed.title.trim() ? parsed.title : BASE_TITLE,
+      heroEyebrow: typeof parsed.heroEyebrow === "string" ? parsed.heroEyebrow : DEFAULT_HERO_EYEBROW,
+      heroDescription: typeof parsed.heroDescription === "string" ? parsed.heroDescription : DEFAULT_HERO_DESCRIPTION,
+      heroCaption: typeof parsed.heroCaption === "string" ? parsed.heroCaption : DEFAULT_HERO_CAPTION,
+      heroImagePath: typeof parsed.heroImagePath === "string" ? parsed.heroImagePath : null,
+      galleryMedia: validGalleryMedia(parsed.galleryMedia) ? parsed.galleryMedia : [],
+    };
   } catch (error) {
     setSaveStatus("Could not load saved edits; showing the original register.", true);
-    return { members: ORIGINAL_MEMBERS.map((member) => ({ ...member })), year: BASE_YEAR, title: BASE_TITLE };
+    return {
+      members: ORIGINAL_MEMBERS.map((member) => ({ ...member })),
+      year: BASE_YEAR,
+      title: BASE_TITLE,
+      heroEyebrow: DEFAULT_HERO_EYEBROW,
+      heroDescription: DEFAULT_HERO_DESCRIPTION,
+      heroCaption: DEFAULT_HERO_CAPTION,
+      heroImagePath: null,
+      galleryMedia: [],
+    };
   }
 }
 
@@ -147,7 +210,16 @@ function setSaveStatus(message, isError = false) {
 
 function saveLocalRegister(value, year, title) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ members: value, year, title }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      members: value,
+      year,
+      title,
+      heroEyebrow,
+      heroDescription,
+      heroCaption,
+      heroImagePath,
+      galleryMedia,
+    }));
     return true;
   } catch (error) {
     return false;
@@ -174,10 +246,121 @@ async function getApiResult(response) {
   return result;
 }
 
+function storageObjectUrl(path) {
+  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
+  return `${SUPABASE_URL}/storage/v1/object/public/${MEDIA_BUCKET}/${encodedPath}`;
+}
+
+function storageObjectEndpoint(path) {
+  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
+  return `${SUPABASE_URL}/storage/v1/object/${MEDIA_BUCKET}/${encodedPath}`;
+}
+
+function storageHeaders(contentType = "application/json") {
+  if (!authSession || authSession.expires_at <= Date.now() / 1000) {
+    authSession = null;
+    throw new Error("Admin session expired. Sign in again before managing media.");
+  }
+  return {
+    apikey: SUPABASE_PUBLISHABLE_KEY,
+    Authorization: `Bearer ${authSession.access_token}`,
+    "Content-Type": contentType,
+  };
+}
+
+function safeFileName(name) {
+  return name.normalize("NFKD").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").slice(-100) || "upload";
+}
+
+function uniqueStoragePath(folder, file) {
+  const uniqueId = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `${folder}/${uniqueId}-${safeFileName(file.name)}`;
+}
+
+async function uploadStorageFile(file, path, onProgress = () => {}) {
+  const headers = storageHeaders();
+  if (file.size <= 6 * 1024 * 1024) {
+    const response = await fetch(storageObjectEndpoint(path), {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        ...headers,
+        "Content-Type": file.type,
+        "x-upsert": "false",
+      },
+      body: file,
+    });
+    onProgress(file.size, file.size);
+    return getApiResult(response);
+  }
+
+  const encodeMetadata = (value) => btoa(value);
+  const metadata = {
+    bucketName: MEDIA_BUCKET,
+    objectName: path,
+    contentType: file.type,
+    cacheControl: "3600",
+  };
+  const createResponse = await fetch(`${SUPABASE_URL}/storage/v1/upload/resumable`, {
+    method: "POST",
+    cache: "no-store",
+    headers: {
+      ...headers,
+      "Tus-Resumable": "1.0.0",
+      "Upload-Length": String(file.size),
+      "Upload-Metadata": Object.entries(metadata)
+        .map(([key, value]) => `${key} ${encodeMetadata(value)}`)
+        .join(","),
+      "x-upsert": "false",
+    },
+  });
+  await getApiResult(createResponse);
+  const uploadUrl = createResponse.headers.get("Location");
+  if (!uploadUrl) throw new Error("Supabase did not return a resumable upload URL.");
+
+  let offset = 0;
+  const chunkSize = 6 * 1024 * 1024;
+  while (offset < file.size) {
+    const end = Math.min(offset + chunkSize, file.size);
+    const response = await fetch(new URL(uploadUrl, `${SUPABASE_URL}/`).href, {
+      method: "PATCH",
+      cache: "no-store",
+      headers: {
+        ...headers,
+        "Content-Type": "application/offset+octet-stream",
+        "Tus-Resumable": "1.0.0",
+        "Upload-Offset": String(offset),
+      },
+      body: file.slice(offset, end),
+    });
+    await getApiResult(response);
+    const reportedOffset = Number(response.headers.get("Upload-Offset"));
+    offset = Number.isFinite(reportedOffset) && reportedOffset > offset ? reportedOffset : end;
+    onProgress(offset, file.size);
+  }
+}
+
+async function deleteStorageFile(path) {
+  if (!path) return;
+  const response = await fetch(`${SUPABASE_URL}/storage/v1/object/${MEDIA_BUCKET}`, {
+    method: "DELETE",
+    cache: "no-store",
+    headers: storageHeaders(),
+    body: JSON.stringify({ prefixes: [path] }),
+  });
+  await getApiResult(response);
+}
+
 async function loadSharedRegister(useLegacySchema = false) {
+  const legacyOnly = useLegacySchema === "legacy";
+  const select = legacyOnly
+    ? "members,event_year"
+    : useLegacySchema
+      ? "members,event_year,event_title"
+      : "members,event_year,event_title,hero_eyebrow,hero_description,hero_caption,hero_image_path,gallery_media";
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/shared_register?id=eq.${encodeURIComponent(SHARED_REGISTER_ID)}&select=${useLegacySchema ? "members,event_year" : "members,event_year,event_title"}`,
+      `${SUPABASE_URL}/rest/v1/shared_register?id=eq.${encodeURIComponent(SHARED_REGISTER_ID)}&select=${select}`,
       {
         cache: "no-store",
         headers: {
@@ -198,31 +381,58 @@ async function loadSharedRegister(useLegacySchema = false) {
     if (!isValidMembers(register.members) || !isValidYear(register.event_year)) {
       throw new Error("The shared register data is invalid.");
     }
-    if (!useLegacySchema && (typeof register.event_title !== "string" || !register.event_title.trim())) {
-      throw new Error("The shared event title is invalid. Run the updated Supabase setup SQL.");
+    if (!legacyOnly && (typeof register.event_title !== "string" || !register.event_title.trim())) {
+      throw new Error("The shared event title is invalid.");
+    }
+    if (!useLegacySchema && (
+      typeof register.hero_eyebrow !== "string" ||
+      typeof register.hero_description !== "string" ||
+      typeof register.hero_caption !== "string" ||
+      (register.hero_image_path !== null && typeof register.hero_image_path !== "string") ||
+      !validGalleryMedia(register.gallery_media)
+    )) {
+      throw new Error("The shared site settings are invalid. Run the updated Supabase setup SQL.");
     }
     members = register.members;
     eventYear = register.event_year;
-    eventTitle = useLegacySchema ? BASE_TITLE : register.event_title;
-    supportsSharedEventTitle = !useLegacySchema;
+    eventTitle = legacyOnly ? BASE_TITLE : register.event_title;
+    supportsSharedEventTitle = !legacyOnly;
+    supportsSharedSiteSettings = !useLegacySchema;
+    heroEyebrow = useLegacySchema ? DEFAULT_HERO_EYEBROW : register.hero_eyebrow;
+    heroDescription = useLegacySchema ? DEFAULT_HERO_DESCRIPTION : register.hero_description;
+    heroCaption = useLegacySchema ? DEFAULT_HERO_CAPTION : register.hero_caption;
+    heroImagePath = useLegacySchema ? null : register.hero_image_path;
+    galleryMedia = useLegacySchema ? [] : register.gallery_media;
     saveLocalRegister(members, eventYear, eventTitle);
     applyEventSettings();
     renderPublicRegister();
     populateMemberPhotoSelect();
+    renderGalleryMedia();
     renderEditor();
     setSaveStatus("Shared register loaded");
     return true;
   } catch (error) {
-    if (!useLegacySchema && error.message?.toLowerCase().includes("event_title")) {
-      supportsSharedEventTitle = false;
+    if (!useLegacySchema && !legacyOnly && /hero_eyebrow|hero_description|hero_caption|hero_image_path|gallery_media/i.test(error.message || "")) {
+      supportsSharedSiteSettings = false;
       return loadSharedRegister(true);
+    }
+    if (useLegacySchema !== "legacy" && /event_title/i.test(error.message || "")) {
+      supportsSharedEventTitle = false;
+      return loadSharedRegister("legacy");
     }
     setSaveStatus(`Shared register unavailable: ${error.message}`, true);
     return false;
   }
 }
 
-async function saveSharedRegister(value, year, title, includeTitle = supportsSharedEventTitle) {
+async function saveSharedRegister(
+  value,
+  year,
+  title,
+  includeTitle = supportsSharedEventTitle,
+  includeSiteSettings = supportsSharedSiteSettings,
+  requireSiteSettings = false
+) {
   if (!authSession || authSession.expires_at <= Date.now() / 1000) {
     authSession = null;
     throw new Error("Admin session expired. Close this window and sign in again.");
@@ -244,6 +454,13 @@ async function saveSharedRegister(value, year, title, includeTitle = supportsSha
       members: value,
       event_year: year,
       ...(includeTitle ? { event_title: title } : {}),
+      ...(includeSiteSettings ? {
+        hero_eyebrow: heroEyebrow,
+        hero_description: heroDescription,
+        hero_caption: heroCaption,
+        hero_image_path: heroImagePath,
+        gallery_media: galleryMedia,
+      } : {}),
     }),
   });
   try {
@@ -254,7 +471,14 @@ async function saveSharedRegister(value, year, title, includeTitle = supportsSha
       if (title !== eventTitle) {
         throw new Error("Run the updated supabase-setup.sql to enable shared title editing.");
       }
-      return saveSharedRegister(value, year, title, false);
+      return saveSharedRegister(value, year, title, false, includeSiteSettings, requireSiteSettings);
+    }
+    if (includeSiteSettings && /hero_eyebrow|hero_description|hero_caption|hero_image_path|gallery_media/i.test(error.message || "")) {
+      supportsSharedSiteSettings = false;
+      if (requireSiteSettings) {
+        throw new Error("Run the updated supabase-setup.sql to enable shared banner and gallery management.");
+      }
+      return saveSharedRegister(value, year, title, includeTitle, false, false);
     }
     throw error;
   }
@@ -383,7 +607,7 @@ function renderMemberCards(data = members) {
     const frame = document.createElement("div");
     frame.className = "member-photo-frame";
     frame.style.background = `linear-gradient(145deg, ${["#f2d9b8, #c67d50 55%, #773c3d", "#e7d6b7, #a77753 55%, #513847", "#f0d7b0, #b45c4d 55%, #65394b", "#e8d6c3, #bd8c53 55%, #4b5360"][index % 4]})`;
-    const photoUrl = memberPhotoUrls.get(member.id);
+    const photoUrl = member.photo_path ? storageObjectUrl(member.photo_path) : null;
     if (photoUrl) {
       const photo = document.createElement("img");
       photo.src = photoUrl;
@@ -426,6 +650,7 @@ function populateMemberPhotoSelect() {
     memberPhotoSelect.value = selectedMemberId;
   }
   renderManagerMemberPhotos();
+  updateSelectedMemberPhotoControls();
 }
 
 function renderManagerMemberPhotos() {
@@ -434,7 +659,7 @@ function renderManagerMemberPhotos() {
   members.slice(0, 20).forEach((member) => {
     const item = document.createElement("div");
     item.className = "manager-member-photo-item";
-    const url = memberPhotoUrls.get(member.id);
+    const url = member.photo_path ? storageObjectUrl(member.photo_path) : null;
     if (url) {
       const image = document.createElement("img");
       image.src = url;
@@ -452,20 +677,65 @@ function renderManagerMemberPhotos() {
     if (url) {
       const remove = document.createElement("button");
       remove.type = "button";
-      remove.className = "remove-row";
-      remove.textContent = "×";
-      remove.setAttribute("aria-label", `Remove photo for ${member.name}`);
-      remove.addEventListener("click", () => {
-        URL.revokeObjectURL(url);
-        memberPhotoUrls.delete(member.id);
-        renderMemberCards();
-        renderManagerMemberPhotos();
-      });
+      remove.className = "button button-outline";
+      remove.textContent = "Delete";
+      remove.disabled = !mediaAuthorized;
+      remove.setAttribute("aria-label", `Delete photo for ${member.name}`);
+      remove.addEventListener("click", () => removeMemberPhoto(member));
       item.append(remove);
     }
     fragment.append(item);
   });
   list.replaceChildren(fragment);
+}
+
+function updateSelectedMemberPhotoControls() {
+  const member = members.find((item) => item.id === memberPhotoSelect.value);
+  const hasPhoto = Boolean(member?.photo_path);
+  const signedIn = mediaAuthorized && authSession && authSession.expires_at > Date.now() / 1000;
+  chooseMemberPhotoButton.disabled = !signedIn || !member;
+  chooseMemberPhotoButton.textContent = hasPhoto ? "Replace member photo" : "Add member photo";
+  removeMemberPhotoButton.disabled = !signedIn || !hasPhoto;
+}
+
+async function removeMemberPhoto(member) {
+  if (!member?.photo_path || !mediaAuthorized) return;
+  const photoPath = member.photo_path;
+  const updatedMembers = members.map((item) => {
+    if (item.id !== member.id) return { ...item };
+    const updated = { ...item };
+    delete updated.photo_path;
+    return updated;
+  });
+  removeMemberPhotoButton.disabled = true;
+  memberPhotoStatus.textContent = `Deleting ${member.name}'s photo…`;
+  memberPhotoStatus.classList.remove("is-error");
+  try {
+    await saveSharedRegister(updatedMembers, eventYear, eventTitle);
+    members = updatedMembers;
+    editingMembers = editingMembers.map((item) => {
+      if (item.id !== member.id) return item;
+      const updated = { ...item };
+      delete updated.photo_path;
+      return updated;
+    });
+    saveLocalRegister(members, eventYear, eventTitle);
+    renderMemberCards();
+    renderManagerMemberPhotos();
+    updateSelectedMemberPhotoControls();
+  } catch (error) {
+    memberPhotoStatus.textContent = error.message || "Unable to delete the member photo.";
+    memberPhotoStatus.classList.add("is-error");
+    updateSelectedMemberPhotoControls();
+    return;
+  }
+  try {
+    await deleteStorageFile(photoPath);
+    memberPhotoStatus.textContent = `Photo deleted for ${member.name}.`;
+  } catch (error) {
+    memberPhotoStatus.textContent = `Photo removed from the page, but the stored file could not be deleted: ${error.message}`;
+    memberPhotoStatus.classList.add("is-error");
+  }
 }
 
 function updateRegisterSummary() {
@@ -482,6 +752,9 @@ function applyEventSettings() {
   document.querySelector(".brand").setAttribute("aria-label", `${eventTitle} Karkatta home`);
   document.querySelector("#brand-event-title").textContent = eventTitle;
   document.querySelector("#brand-event-year").textContent = `KARKATTA · ${eventYear}`;
+  document.querySelector("#hero-eyebrow").textContent = heroEyebrow;
+  document.querySelector("#hero-description").textContent = heroDescription;
+  document.querySelector("#hero-caption").textContent = heroCaption;
   document.querySelector("#hero-event-title").textContent = eventTitle;
   document.querySelector("#hero-year").textContent = String(eventYear);
   document.querySelector("#hero-event-label").textContent = eventTitle;
@@ -493,6 +766,14 @@ function applyEventSettings() {
   document.querySelector("#footer-event-year").textContent = `${eventTitle.toUpperCase()} · ${eventYear}`;
   eventTitleInput.value = eventTitle;
   eventYearInput.value = String(eventYear);
+  heroEyebrowInput.value = heroEyebrow;
+  heroDescriptionInput.value = heroDescription;
+  heroCaptionInput.value = heroCaption;
+  const heroImage = document.querySelector("#hero-background-image");
+  heroImage.hidden = !heroImagePath;
+  if (heroImagePath) heroImage.src = storageObjectUrl(heroImagePath);
+  else heroImage.removeAttribute("src");
+  removeHeroPhotoButton.disabled = !heroImagePath || !mediaAuthorized;
 }
 
 function openEditor() {
@@ -502,6 +783,10 @@ function openEditor() {
   chooseMediaButton.disabled = !mediaAuthorized;
   memberPhotoInput.disabled = !mediaAuthorized;
   chooseMemberPhotoButton.disabled = !mediaAuthorized;
+  heroPhotoInput.disabled = !mediaAuthorized;
+  chooseHeroPhotoButton.disabled = !mediaAuthorized;
+  removeHeroPhotoButton.disabled = !mediaAuthorized || !heroImagePath;
+  updateSelectedMemberPhotoControls();
   loginForm.hidden = Boolean(signedIn);
   editorContent.hidden = !signedIn;
   loginStatus.textContent = "";
@@ -568,6 +853,11 @@ loginForm.addEventListener("submit", async (event) => {
     chooseMediaButton.disabled = false;
     memberPhotoInput.disabled = false;
     chooseMemberPhotoButton.disabled = false;
+    updateSelectedMemberPhotoControls();
+    heroPhotoInput.disabled = false;
+    chooseHeroPhotoButton.disabled = false;
+    removeHeroPhotoButton.disabled = !heroImagePath;
+    updateSelectedMemberPhotoControls();
     const loaded = await loadSharedRegister();
     prepareEditor();
     if (!loaded) {
@@ -676,18 +966,19 @@ saveMembersButton.addEventListener("click", async () => {
   setSaveStatus("Shared register updated successfully.");
 });
 
-eventTitleInput.addEventListener("input", () => {
-  document.querySelector("#settings-status").textContent = "Unsaved site details";
-  document.querySelector("#settings-status").classList.remove("is-error");
-});
-eventYearInput.addEventListener("input", () => {
-  document.querySelector("#settings-status").textContent = "Unsaved site details";
-  document.querySelector("#settings-status").classList.remove("is-error");
-});
+for (const input of [eventTitleInput, eventYearInput, heroEyebrowInput, heroDescriptionInput, heroCaptionInput]) {
+  input.addEventListener("input", () => {
+    document.querySelector("#settings-status").textContent = "Unsaved site details";
+    document.querySelector("#settings-status").classList.remove("is-error");
+  });
+}
 
 saveEventSettingsButton.addEventListener("click", async () => {
   const title = eventTitleInput.value.trim();
   const year = Number(eventYearInput.value);
+  const nextHeroEyebrow = heroEyebrowInput.value.trim();
+  const nextHeroDescription = heroDescriptionInput.value.trim();
+  const nextHeroCaption = heroCaptionInput.value.trim();
   if (!title || !eventTitleInput.validity.valid) {
     eventTitleInput.reportValidity();
     return;
@@ -696,15 +987,26 @@ saveEventSettingsButton.addEventListener("click", async () => {
     eventYearInput.reportValidity();
     return;
   }
+  if (!nextHeroDescription || !heroDescriptionInput.validity.valid) {
+    heroDescriptionInput.reportValidity();
+    return;
+  }
+  if (!heroEyebrowInput.validity.valid || !heroCaptionInput.validity.valid) return;
   saveEventSettingsButton.disabled = true;
   const settingsStatus = document.querySelector("#settings-status");
   settingsStatus.textContent = "Saving site details…";
   settingsStatus.classList.remove("is-error");
+  const previousSettings = { heroEyebrow, heroDescription, heroCaption };
+  heroEyebrow = nextHeroEyebrow;
+  heroDescription = nextHeroDescription;
+  heroCaption = nextHeroCaption;
   try {
-    await saveSharedRegister(members, year, title);
+    await saveSharedRegister(members, year, title, supportsSharedEventTitle, true, true);
   } catch (error) {
+    ({ heroEyebrow, heroDescription, heroCaption } = previousSettings);
     settingsStatus.textContent = error.message || "Unable to save site details.";
     settingsStatus.classList.add("is-error");
+    applyEventSettings();
     return;
   } finally {
     saveEventSettingsButton.disabled = false;
@@ -726,6 +1028,10 @@ managerSignoutButton.addEventListener("click", () => {
   chooseMediaButton.disabled = true;
   memberPhotoInput.disabled = true;
   chooseMemberPhotoButton.disabled = true;
+  removeMemberPhotoButton.disabled = true;
+  heroPhotoInput.disabled = true;
+  chooseHeroPhotoButton.disabled = true;
+  removeHeroPhotoButton.disabled = true;
   loginForm.reset();
   loginForm.hidden = false;
   editorContent.hidden = true;
@@ -891,11 +1197,13 @@ document.querySelector("#export-pdf").addEventListener("click", () =>
 
 const mediaGrid = document.querySelector("#media-grid");
 const mediaStatus = document.querySelector("#media-status");
-const mediaUrls = new Set();
-const maxFileSize = 30 * 1024 * 1024;
+const managerMediaGrid = document.querySelector("#manager-media-grid");
 mediaInput.disabled = true;
 memberPhotoInput.disabled = true;
+heroPhotoInput.disabled = true;
 populateMemberPhotoSelect();
+
+memberPhotoSelect.addEventListener("change", updateSelectedMemberPhotoControls);
 
 chooseMemberPhotoButton.addEventListener("click", () => {
   if (!mediaAuthorized || !authSession || authSession.expires_at <= Date.now() / 1000) {
@@ -911,17 +1219,17 @@ chooseMemberPhotoButton.addEventListener("click", () => {
   memberPhotoInput.click();
 });
 
-memberPhotoInput.addEventListener("change", () => {
+removeMemberPhotoButton.addEventListener("click", () => {
+  const member = members.find((item) => item.id === memberPhotoSelect.value);
+  if (member) removeMemberPhoto(member);
+});
+
+memberPhotoInput.addEventListener("change", async () => {
   const file = memberPhotoInput.files?.[0];
   memberPhotoInput.value = "";
   if (!file) return;
   if (!file.type.startsWith("image/")) {
     memberPhotoStatus.textContent = "Choose an image file for a member photo.";
-    memberPhotoStatus.classList.add("is-error");
-    return;
-  }
-  if (file.size > maxFileSize) {
-    memberPhotoStatus.textContent = "Member photos must be 30 MB or smaller.";
     memberPhotoStatus.classList.add("is-error");
     return;
   }
@@ -931,13 +1239,126 @@ memberPhotoInput.addEventListener("change", () => {
     memberPhotoStatus.classList.add("is-error");
     return;
   }
-  const previousUrl = memberPhotoUrls.get(member.id);
-  if (previousUrl) URL.revokeObjectURL(previousUrl);
-  memberPhotoUrls.set(member.id, URL.createObjectURL(file));
-  renderMemberCards();
-  renderManagerMemberPhotos();
-  memberPhotoStatus.textContent = `Photo preview added for ${member.name}. It is visible only in this browser session.`;
+  const oldPath = member.photo_path;
+  const newPath = uniqueStoragePath("members", file);
+  memberPhotoStatus.textContent = `Uploading photo for ${member.name}…`;
   memberPhotoStatus.classList.remove("is-error");
+  try {
+    await uploadStorageFile(file, newPath, (sent, total) => {
+      memberPhotoStatus.textContent = `Uploading photo for ${member.name}… ${Math.floor(sent / total * 100)}%`;
+    });
+    const updatedMembers = members.map((item) => item.id === member.id ? { ...item, photo_path: newPath } : { ...item });
+    await saveSharedRegister(updatedMembers, eventYear, eventTitle);
+    members = updatedMembers;
+    editingMembers = editingMembers.map((item) => item.id === member.id ? { ...item, photo_path: newPath } : item);
+    saveLocalRegister(members, eventYear, eventTitle);
+    renderMemberCards();
+    renderManagerMemberPhotos();
+    updateSelectedMemberPhotoControls();
+    if (oldPath) {
+      try {
+        await deleteStorageFile(oldPath);
+      } catch (error) {
+        memberPhotoStatus.textContent = `Photo saved, but the previous file could not be deleted: ${error.message}`;
+        memberPhotoStatus.classList.add("is-error");
+        return;
+      }
+    }
+    memberPhotoStatus.textContent = `Photo saved for ${member.name} and shared with everyone.`;
+  } catch (error) {
+    let cleanupError = "";
+    try {
+      await deleteStorageFile(newPath);
+    } catch (cleanup) {
+      cleanupError = ` The uploaded file could not be cleaned up: ${cleanup.message}`;
+    }
+    memberPhotoStatus.textContent = `${error.message || "Unable to save the member photo."}${cleanupError}`;
+    memberPhotoStatus.classList.add("is-error");
+  }
+});
+
+chooseHeroPhotoButton.addEventListener("click", () => {
+  if (!mediaAuthorized || !authSession || authSession.expires_at <= Date.now() / 1000) {
+    document.querySelector("#settings-status").textContent = "Your admin session has expired. Sign in again to manage the banner photo.";
+    document.querySelector("#settings-status").classList.add("is-error");
+    return;
+  }
+  heroPhotoInput.click();
+});
+
+heroPhotoInput.addEventListener("change", async () => {
+  const file = heroPhotoInput.files?.[0];
+  heroPhotoInput.value = "";
+  if (!file) return;
+  const settingsStatus = document.querySelector("#settings-status");
+  if (!file.type.startsWith("image/")) {
+    settingsStatus.textContent = "Choose an image file for the banner.";
+    settingsStatus.classList.add("is-error");
+    return;
+  }
+  const oldPath = heroImagePath;
+  const newPath = uniqueStoragePath("banner", file);
+  settingsStatus.textContent = "Uploading banner photo…";
+  settingsStatus.classList.remove("is-error");
+  try {
+    await uploadStorageFile(file, newPath, (sent, total) => {
+      settingsStatus.textContent = `Uploading banner photo… ${Math.floor(sent / total * 100)}%`;
+    });
+    heroImagePath = newPath;
+    await saveSharedRegister(members, eventYear, eventTitle, supportsSharedEventTitle, true, true);
+    saveLocalRegister(members, eventYear, eventTitle);
+    applyEventSettings();
+  } catch (error) {
+    heroImagePath = oldPath;
+    applyEventSettings();
+    let cleanupError = "";
+    try {
+      await deleteStorageFile(newPath);
+    } catch (cleanup) {
+      cleanupError = ` The uploaded file could not be cleaned up: ${cleanup.message}`;
+    }
+    settingsStatus.textContent = `${error.message || "Unable to save the banner photo."}${cleanupError}`;
+    settingsStatus.classList.add("is-error");
+    return;
+  }
+  if (oldPath) {
+    try {
+      await deleteStorageFile(oldPath);
+    } catch (error) {
+      settingsStatus.textContent = `Banner photo saved, but the previous file could not be deleted: ${error.message}`;
+      settingsStatus.classList.add("is-error");
+      return;
+    }
+  }
+  settingsStatus.textContent = "Banner photo saved and shared. It automatically fits the banner.";
+});
+
+removeHeroPhotoButton.addEventListener("click", async () => {
+  if (!heroImagePath) return;
+  const oldPath = heroImagePath;
+  const settingsStatus = document.querySelector("#settings-status");
+  removeHeroPhotoButton.disabled = true;
+  settingsStatus.textContent = "Removing banner photo…";
+  settingsStatus.classList.remove("is-error");
+  heroImagePath = null;
+  try {
+    await saveSharedRegister(members, eventYear, eventTitle, supportsSharedEventTitle, true, true);
+    saveLocalRegister(members, eventYear, eventTitle);
+    applyEventSettings();
+  } catch (error) {
+    heroImagePath = oldPath;
+    applyEventSettings();
+    settingsStatus.textContent = error.message || "Unable to remove the banner photo.";
+    settingsStatus.classList.add("is-error");
+    return;
+  }
+  try {
+    await deleteStorageFile(oldPath);
+    settingsStatus.textContent = "Banner photo removed.";
+  } catch (error) {
+    settingsStatus.textContent = `Banner photo removed from the page, but the stored file could not be deleted: ${error.message}`;
+    settingsStatus.classList.add("is-error");
+  }
 });
 
 document.querySelector("#choose-media").addEventListener("click", () => {
@@ -952,12 +1373,82 @@ document.querySelector("#choose-media").addEventListener("click", () => {
   mediaInput.click();
 });
 mediaInput.addEventListener("change", () => {
-  addMediaFiles(mediaInput.files);
+  addMediaFiles(mediaInput.files).catch((error) => {
+    mediaStatus.textContent = error.message || "Unable to upload media.";
+    mediaStatus.classList.add("is-error");
+  });
   mediaInput.value = "";
 });
 
-function addMediaFiles(files) {
-  if (!mediaAuthorized || !authSession || authSession.expires_at <= Date.now() / 1000) return;
+function createMediaCard(item, manager = false) {
+  const card = document.createElement("article");
+  card.className = "media-card";
+  const preview = document.createElement(item.type.startsWith("video/") ? "video" : "img");
+  preview.src = storageObjectUrl(item.path);
+  if (preview instanceof HTMLVideoElement) {
+    preview.controls = true;
+    preview.preload = "metadata";
+  } else {
+    preview.alt = item.name;
+  }
+  const name = document.createElement("div");
+  name.className = "media-name";
+  name.textContent = item.name;
+  card.append(preview, name);
+  if (manager) {
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "media-remove";
+    remove.textContent = "×";
+    remove.disabled = !mediaAuthorized;
+    remove.setAttribute("aria-label", `Delete ${item.name}`);
+    remove.addEventListener("click", () => removeGalleryMedia(item));
+    card.append(remove);
+  }
+  return card;
+}
+
+function renderGalleryMedia() {
+  mediaGrid.replaceChildren(...galleryMedia.map((item) => createMediaCard(item)));
+  managerMediaGrid.replaceChildren(...galleryMedia.map((item) => createMediaCard(item, true)));
+}
+
+async function removeGalleryMedia(item) {
+  if (!supportsSharedSiteSettings) {
+    mediaStatus.textContent = "Run the updated supabase-setup.sql before managing shared gallery media.";
+    mediaStatus.classList.add("is-error");
+    return;
+  }
+  const previousMedia = galleryMedia;
+  galleryMedia = galleryMedia.filter((media) => media.id !== item.id);
+  try {
+    await saveSharedRegister(members, eventYear, eventTitle);
+  } catch (error) {
+    galleryMedia = previousMedia;
+    mediaStatus.textContent = error.message || "Unable to remove gallery media.";
+    mediaStatus.classList.add("is-error");
+    renderGalleryMedia();
+    return;
+  }
+  saveLocalRegister(members, eventYear, eventTitle);
+  renderGalleryMedia();
+  try {
+    await deleteStorageFile(item.path);
+    mediaStatus.textContent = `${item.name} was removed from the shared gallery.`;
+    mediaStatus.classList.remove("is-error");
+  } catch (error) {
+    mediaStatus.textContent = `Removed from the gallery, but the stored file could not be deleted: ${error.message}`;
+    mediaStatus.classList.add("is-error");
+  }
+}
+
+async function addMediaFiles(files) {
+  if (!mediaAuthorized || !authSession || authSession.expires_at <= Date.now() / 1000) {
+    throw new Error("Your admin session has expired. Sign in again to manage media.");
+  }
+  if (!supportsSharedSiteSettings) {
+    throw new Error("Run the updated supabase-setup.sql before managing shared gallery media.");
+  }
   let added = 0;
   for (const file of files) {
     if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
@@ -965,49 +1456,32 @@ function addMediaFiles(files) {
       mediaStatus.classList.add("is-error");
       continue;
     }
-    if (file.size > maxFileSize) {
-      mediaStatus.textContent = `Skipped ${file.name}: the maximum file size is 30 MB.`;
-      mediaStatus.classList.add("is-error");
-      continue;
+    const path = uniqueStoragePath("gallery", file);
+    mediaStatus.textContent = `Uploading ${file.name}…`;
+    mediaStatus.classList.remove("is-error");
+    await uploadStorageFile(file, path, (sent, total) => {
+      mediaStatus.textContent = `Uploading ${file.name}… ${Math.floor(sent / total * 100)}%`;
+    });
+    const item = { id: path, name: file.name, type: file.type, path };
+    const previousMedia = galleryMedia;
+    galleryMedia = [...galleryMedia, item];
+    try {
+      await saveSharedRegister(members, eventYear, eventTitle);
+    } catch (error) {
+      galleryMedia = previousMedia;
+      try {
+        await deleteStorageFile(path);
+      } catch (cleanup) {
+        throw new Error(`${error.message} Uploaded file cleanup also failed: ${cleanup.message}`);
+      }
+      throw error;
     }
-    const url = URL.createObjectURL(file);
-    mediaUrls.add(url);
-    const card = document.createElement("article");
-    card.className = "media-card";
-    const preview = document.createElement(file.type.startsWith("video/") ? "video" : "img");
-    preview.src = url;
-    if (preview instanceof HTMLVideoElement) {
-      preview.controls = true;
-      preview.preload = "metadata";
-    } else {
-      preview.alt = file.name;
-    }
-    const name = document.createElement("div");
-    name.className = "media-name";
-    name.textContent = file.name;
-    card.append(preview, name);
-    const managerCard = card.cloneNode(true);
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "media-remove";
-    remove.setAttribute("aria-label", `Remove ${file.name}`);
-    remove.textContent = "×";
-    const removeMedia = () => {
-      URL.revokeObjectURL(url);
-      mediaUrls.delete(url);
-      card.remove();
-      managerCard.remove();
-      document.querySelector(".gallery-empty").hidden = mediaGrid.children.length > 0;
-    };
-    remove.addEventListener("click", removeMedia);
-    managerCard.append(remove);
-    mediaGrid.append(card);
-    document.querySelector("#manager-media-grid").append(managerCard);
-    document.querySelector(".gallery-empty").hidden = true;
+    saveLocalRegister(members, eventYear, eventTitle);
+    renderGalleryMedia();
     added += 1;
   }
   if (added > 0) {
-    mediaStatus.textContent = `${added} ${added === 1 ? "file" : "files"} added. Previews last for this session only.`;
+    mediaStatus.textContent = `${added} ${added === 1 ? "file" : "files"} uploaded and shared with everyone.`;
     mediaStatus.classList.remove("is-error");
   }
 }
@@ -1025,17 +1499,16 @@ for (const eventName of ["dragleave", "drop"]) {
     event.preventDefault();
     if (!mediaAuthorized || !authSession || authSession.expires_at <= Date.now() / 1000) return;
     dropZone.classList.remove("is-dragging");
-    if (eventName === "drop") addMediaFiles(event.dataTransfer.files);
+    if (eventName === "drop") addMediaFiles(event.dataTransfer.files).catch((error) => {
+      mediaStatus.textContent = error.message || "Unable to upload media.";
+      mediaStatus.classList.add("is-error");
+    });
   });
 }
 
-window.addEventListener("beforeunload", () => {
-  for (const url of mediaUrls) URL.revokeObjectURL(url);
-  for (const url of memberPhotoUrls.values()) URL.revokeObjectURL(url);
-});
-
 applyEventSettings();
 renderPublicRegister();
+renderGalleryMedia();
 loadSharedRegister();
 
 document.addEventListener("visibilitychange", () => {

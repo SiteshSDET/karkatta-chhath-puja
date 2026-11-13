@@ -30,6 +30,7 @@
 
     <main id="home">
       <section class="hero" aria-labelledby="hero-title">
+        <img id="hero-background-image" class="hero-background-image" alt="" aria-hidden="true" hidden>
         <div class="hero-art" aria-hidden="true">
           <span class="sun"></span>
           <span class="sun-glow"></span>
@@ -40,9 +41,10 @@
           </svg>
         </div>
         <div class="hero-content">
-          <span class="eyebrow"><span class="eyebrow-dot"></span> A KARKATTA COMMUNITY CELEBRATION</span>
+          <span class="eyebrow"><span class="eyebrow-dot"></span> <span id="hero-eyebrow">A KARKATTA COMMUNITY CELEBRATION</span></span>
           <h1 id="hero-title"><span id="hero-event-title">Chhath Puja</span> <span id="hero-year">2026</span></h1>
-          <p class="hero-description">Together in devotion. Together in gratitude.<br>Celebrating the beauty of Chhath in Karkatta.</p>
+          <p id="hero-description" class="hero-description">Together in devotion. Together in gratitude.
+Celebrating the beauty of Chhath in Karkatta.</p>
           <div class="hero-details">
             <span>
               <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 18s6-5.3 6-10a6 6 0 1 0-12 0c0 4.7 6 10 6 10Z"/><circle cx="10" cy="8" r="2"/></svg>
@@ -55,7 +57,7 @@
             </span>
           </div>
         </div>
-        <div class="hero-caption" aria-hidden="true">ARAGHYA · GRATITUDE · TOGETHERNESS</div>
+        <div id="hero-caption" class="hero-caption" aria-hidden="true">ARAGHYA · GRATITUDE · TOGETHERNESS</div>
       </section>
 
       <section id="member-photos" class="content-section member-gallery-section" aria-labelledby="member-gallery-title">
@@ -64,7 +66,7 @@
             <span class="section-kicker">OUR KARKATTA COMMUNITY</span>
             <h2 id="member-gallery-title">Meet our members</h2>
           </div>
-          <span class="section-aside">Swipe to explore our first 20 members</span>
+          <span class="section-aside">Swipe to explore members</span>
         </div>
         <div id="member-cards" class="member-cards" aria-label="Member photo cards" tabindex="0"></div>
       </section>
@@ -195,6 +197,24 @@
             <label>Celebration year
               <input id="event-year" class="settings-input" type="number" min="1" max="9999" step="1" required>
             </label>
+            <label>Banner eyebrow
+              <input id="hero-eyebrow-input" class="settings-input" type="text" maxlength="100">
+            </label>
+            <label>Banner message
+              <textarea id="hero-description-input" class="settings-input settings-textarea" maxlength="300" rows="3"></textarea>
+            </label>
+            <label>Banner caption
+              <input id="hero-caption-input" class="settings-input" type="text" maxlength="100">
+            </label>
+            <div class="hero-photo-tools">
+              <span>Banner photo</span>
+              <input id="hero-photo-input" class="visually-hidden" type="file" accept="image/*" disabled>
+              <div class="editor-actions">
+                <button id="choose-hero-photo" class="button button-outline" type="button" disabled>Change banner photo</button>
+                <button id="remove-hero-photo" class="button button-outline" type="button" disabled>Remove photo</button>
+              </div>
+              <small>Images automatically fit the banner. Upload size is limited by your Supabase project.</small>
+            </div>
             <button id="save-event-settings" class="button button-primary" type="button">Save site details</button>
             <p id="settings-status" class="editor-status" role="status" aria-live="polite">Updates appear across the site after you save.</p>
           </div>
@@ -208,13 +228,14 @@
             <select id="member-photo-select" class="settings-input"></select>
             <input id="member-photo-input" class="visually-hidden" type="file" accept="image/*" disabled>
             <button id="choose-member-photo" class="button button-outline" type="button" disabled>Add member photo</button>
-            <p id="member-photo-status" class="editor-status" role="status" aria-live="polite">Photos are previews on this device for this session.</p>
+            <button id="remove-member-photo" class="button button-outline" type="button" disabled>Delete selected member photo</button>
+            <p id="member-photo-status" class="editor-status" role="status" aria-live="polite">Member photos are saved and shared with everyone.</p>
           </div>
           <div id="manager-member-photo-list" class="manager-member-photo-list"></div>
         </section>
         <section class="manager-panel" data-manager-panel="media" aria-labelledby="media-panel-title" hidden>
           <div class="manager-panel-heading">
-            <div><h3 id="media-panel-title">Manage photos &amp; videos</h3><p>Select images or videos to preview them in the gallery.</p></div>
+            <div><h3 id="media-panel-title">Manage photos &amp; videos</h3><p>Upload photos or videos to the shared gallery. The size limit is set by your Supabase project.</p></div>
           </div>
           <div id="drop-zone" class="upload-zone">
             <input id="media-input" class="visually-hidden" type="file" accept="image/*,video/*" multiple disabled>
@@ -223,7 +244,7 @@
             </span>
             <div class="upload-copy"><strong>Bring the celebration to life</strong><span>Choose photos or videos, or drag them here</span></div>
             <button id="choose-media" class="button button-outline" type="button" disabled>Choose files</button>
-            <p id="media-status" class="upload-note" role="status" aria-live="polite">Sign in to manage media. Previews remain on this device.</p>
+            <p id="media-status" class="upload-note" role="status" aria-live="polite">Sign in to manage shared media.</p>
           </div>
           <div id="manager-media-grid" class="media-grid" aria-live="polite"></div>
         </section>
