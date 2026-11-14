@@ -855,7 +855,7 @@ function renderMemberCards(data = members) {
     const numberBadge = document.createElement("span");
     numberBadge.className = "member-number-badge";
     numberBadge.setAttribute("aria-hidden", "true");
-    numberBadge.textContent = String(index + 1).padStart(2, "0");
+    numberBadge.textContent = "DBCP";
     frame.append(numberBadge);
     const photoUrl = member.photo_path ? storageObjectUrl(member.photo_path) : null;
     if (photoUrl) {
@@ -1326,6 +1326,9 @@ memberSearch.addEventListener("input", renderEditor);
 publicMemberSearch.addEventListener("input", () => renderPublicMemberRows());
 
 addMemberButton.addEventListener("click", () => {
+  editorTableScroll.hidden = false;
+  memberListToggle.setAttribute("aria-expanded", "true");
+  memberListToggle.textContent = "Hide members";
   memberSearch.value = "";
   const id = `member-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   editingMembers.push({ id, name: "", amount: 0, paid: false, received: 0 });
@@ -1562,6 +1565,9 @@ managerSignoutButton.addEventListener("click", () => {
   loginForm.hidden = false;
   editorContent.hidden = true;
   editorDialog.classList.remove("is-manager");
+  editorDialog.classList.add("is-login");
+  editorDialog.style.removeProperty("top");
+  editorDialog.style.removeProperty("bottom");
   loginStatus.textContent = "You have signed out.";
   editingExpenses = [];
   renderManagerExpenses();
