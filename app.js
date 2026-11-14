@@ -1140,7 +1140,7 @@ function prepareEditor() {
   applyEventSettings();
   renderEditor();
   renderManagerExpenses();
-  editorStatus.textContent = "Changes are not saved until you select Save.";
+  editorStatus.textContent = "Unsaved edits will not be shared until you save.";
   editorStatus.classList.remove("is-error");
   editorDialog.classList.add("is-manager");
   editorDialog.classList.remove("is-login");
