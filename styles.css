@@ -479,7 +479,7 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
 .public-member-table thead th { background: #f5e8d5; color: #70452a; }
 .public-member-table tbody tr:nth-child(even) { background: #fffaf3; }
 .public-member-table tfoot th, .public-member-table tfoot td { background: #f2e6d5; }
-.public-member-details-cell { display: none !important; }
+.public-member-list-toggle { display: none; }
 
 .gallery-cards { gap: 20px; }
 .gallery-card { border-color: #e2d9ed; border-radius: 17px; box-shadow: 0 12px 28px #46366c12; transition: transform .2s, box-shadow .2s; }
@@ -602,24 +602,17 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
   .public-register .register-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0; }
   .public-register .summary-card { min-width: 0; min-height: 87px; padding: 11px; border-radius: 12px; }
   .public-register .summary-card strong { font-size: 18px; }
+  .public-member-list-toggle { width: 100%; margin: 0 0 12px; display: block; }
+  .public-register:not(.show-member-list) .public-table-scroll { display: none; }
   .public-table-scroll { overflow: visible; border: 0; background: transparent; }
   .public-member-table { display: block; width: 100%; }
   .public-member-table thead { display: none; }
   .public-member-table tbody { display: grid; gap: 9px; }
-  .public-member-table tbody tr { display: grid; grid-template-columns: 35px minmax(0, 1fr); gap: 8px 10px; padding: 13px; border: 1px solid #f0dfc8; border-left: 3px solid #d08b37; border-radius: 12px; background: linear-gradient(135deg, #fff, #fffaf2); box-shadow: 0 5px 14px #70411b0a; }
+  .public-member-table tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 10px; padding: 13px; border: 1px solid #f0dfc8; border-left: 3px solid #d08b37; border-radius: 12px; background: linear-gradient(135deg, #fff, #fffaf2); box-shadow: 0 5px 14px #70411b0a; }
   .public-member-table tbody td { height: auto; min-width: 0; padding: 0; display: grid; gap: 3px; border: 0; text-align: left !important; overflow-wrap: anywhere; }
   .public-member-table tbody td::before { content: attr(data-label); color: var(--muted); font-size: 9px; font-weight: 600; }
-  .public-member-table tbody td:first-child { grid-column: 1; grid-row: 1; }
-  .public-member-table tbody td:nth-child(2) { grid-column: 2; grid-row: 1; font-weight: 700; }
-  .public-member-table tbody td:nth-child(3),
-  .public-member-table tbody td:nth-child(4),
-  .public-member-table tbody td:nth-child(5) { display: none; }
-  .public-member-table tbody tr.is-expanded td:nth-child(3) { display: grid; grid-column: 1; grid-row: 3; }
-  .public-member-table tbody tr.is-expanded td:nth-child(4) { display: grid; grid-column: 2; grid-row: 3; }
-  .public-member-table tbody tr.is-expanded td:nth-child(5) { display: grid; grid-column: 1 / -1; grid-row: 4; }
-  .public-member-table tbody .public-member-details-cell { display: grid !important; grid-column: 1 / -1; grid-row: 2; }
-  .public-member-details-toggle { width: 100%; min-height: 36px; border: 1px solid #ead4b5; border-radius: 8px; background: #fff7e9; color: #70452a; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
-  .public-member-details-toggle:hover { background: #f9edd8; }
+  .public-member-table tbody td:first-child { display: none; }
+  .public-member-table tbody td:nth-child(2) { grid-column: 1 / -1; font-weight: 700; }
   .public-member-table tfoot { display: none; }
   .public-register .register-footnote { margin-top: 10px; }
   .member-editor {
@@ -752,7 +745,8 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
   body.print-register .public-member-table tbody { display: table-row-group !important; }
   body.print-register .public-member-table tbody tr { display: table-row !important; }
   body.print-register .public-member-table tbody td { display: table-cell !important; }
-  body.print-register .public-member-details-cell { display: none !important; }
+  body.print-register .public-table-scroll { display: block !important; }
+  body.print-register .public-member-list-toggle { display: none !important; }
   body.print-register .public-member-table tbody td::before { content: none !important; }
   body.print-register .public-member-table tbody td:first-child { display: table-cell !important; }
   body.print-register .public-member-table tfoot { display: table-footer-group !important; }

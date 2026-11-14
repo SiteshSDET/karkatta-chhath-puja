@@ -722,22 +722,12 @@ function renderPublicMemberRows(data = members) {
       }
       row.append(cell);
     });
-    const detailsCell = document.createElement("td");
-    detailsCell.className = "public-member-details-cell";
-    const detailsButton = document.createElement("button");
-    detailsButton.type = "button";
-    detailsButton.className = "public-member-details-toggle";
-    detailsButton.setAttribute("aria-expanded", "false");
-    detailsButton.setAttribute("aria-label", `View contribution details for ${member.name}`);
-    detailsButton.textContent = "View contribution";
-    detailsCell.append(detailsButton);
-    row.append(detailsCell);
     fragment.append(row);
   });
   if (matchingMembers.length === 0) {
     const row = document.createElement("tr");
     const cell = document.createElement("td");
-    cell.colSpan = 6;
+    cell.colSpan = 5;
     cell.textContent = "No members match your search.";
     row.append(cell);
     fragment.append(row);
@@ -745,20 +735,13 @@ function renderPublicMemberRows(data = members) {
   publicMemberRows.replaceChildren(fragment);
 }
 
-publicMemberRows.addEventListener("click", (event) => {
-  if (!(event.target instanceof Element)) return;
-  const button = event.target.closest(".public-member-details-toggle");
-  if (!button) return;
-  const row = button.closest("tr");
-  if (!row) return;
+document.querySelector("#public-member-list-toggle").addEventListener("click", (event) => {
+  const button = event.currentTarget;
+  const section = button.closest(".public-register");
   const expanded = button.getAttribute("aria-expanded") !== "true";
-  row.classList.toggle("is-expanded", expanded);
+  section.classList.toggle("show-member-list", expanded);
   button.setAttribute("aria-expanded", String(expanded));
-  button.textContent = expanded ? "Hide contribution" : "View contribution";
-  button.setAttribute(
-    "aria-label",
-    `${expanded ? "Hide" : "View"} contribution details for ${row.cells[1].textContent}`,
-  );
+  button.textContent = expanded ? "Hide members" : "View all members";
 });
 
 function renderPublicRegister(data = members, year = eventYear, title = eventTitle) {
