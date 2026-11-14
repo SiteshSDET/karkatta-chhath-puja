@@ -81,28 +81,23 @@ Celebrating the beauty of Chhath in Karkatta.</p>
         <div class="section-heading register-heading">
           <div>
             <span class="section-kicker">COMMUNITY CONTRIBUTIONS</span>
-            <h2 id="public-register-title">Members register 2026</h2>
+            <h2 id="public-register-title">Chhath Puja members register 2026</h2>
             <p class="section-description">A clear record of pledges, payments, and community support.</p>
-          </div>
-          <div class="pdf-actions">
-            <button id="public-refresh" class="button button-outline" type="button">Refresh data</button>
-            <button id="public-view-pdf" class="button button-primary" type="button">View / Print PDF</button>
-            <button id="public-download-pdf" class="button button-outline" type="button">Download PDF</button>
           </div>
         </div>
         <p id="public-refresh-status" class="pdf-status" role="status" aria-live="polite">Loading the latest shared data…</p>
         <p id="public-pdf-status" class="pdf-status" role="status" aria-live="polite"></p>
+        <label class="search-box public-member-search">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.7" cy="8.7" r="5.7"/><path d="m13 13 4 4"/></svg>
+          <input id="public-member-search" type="search" placeholder="Search member name" aria-label="Search members by name" autocomplete="off">
+        </label>
+        <button id="public-member-list-toggle" class="button button-outline public-member-list-toggle" type="button" aria-controls="public-member-rows" aria-expanded="false">View All Members</button>
         <div class="register-summary" aria-label="Contribution totals">
           <article class="summary-card"><span>Members</span><strong id="public-member-total">52</strong><small>in the register</small></article>
           <article class="summary-card"><span>Total pledged</span><strong id="public-pledged-total">₹9,107</strong><small>as recorded</small></article>
           <article class="summary-card summary-card-accent"><span>Received</span><strong id="public-received-total">₹3,407</strong><small>contributions collected</small></article>
           <article class="summary-card"><span id="public-carry-forward-label">Last Year Carry Forward</span><strong id="public-carry-forward-amount">₹2,000</strong><small id="public-carry-forward-note">included in Hisab balance</small></article>
         </div>
-        <label class="search-box public-member-search">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.7" cy="8.7" r="5.7"/><path d="m13 13 4 4"/></svg>
-          <input id="public-member-search" type="search" placeholder="Search member name" aria-label="Search members by name" autocomplete="off">
-        </label>
-        <button id="public-member-list-toggle" class="button button-outline public-member-list-toggle" type="button" aria-controls="public-member-rows" aria-expanded="false">View All Members Contribution</button>
         <div class="table-scroll public-table-scroll">
           <table class="member-table public-member-table">
             <thead>
@@ -113,6 +108,11 @@ Celebrating the beauty of Chhath in Karkatta.</p>
           </table>
         </div>
         <p class="register-footnote">The previous year's balance is shown separately.</p>
+        <div class="pdf-actions">
+          <button id="public-refresh" class="button button-outline" type="button">Refresh data</button>
+          <button id="public-view-pdf" class="button button-primary" type="button">View / Print PDF</button>
+          <button id="public-download-pdf" class="button button-outline" type="button">Download PDF</button>
+        </div>
       </section>
 
       <section id="accounts-section" class="content-section accounts-section" aria-labelledby="accounts-title">

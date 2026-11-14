@@ -749,8 +749,8 @@ function updatePublicMemberListVisibility() {
   publicRegisterSection.classList.toggle("show-member-list", visible);
   publicMemberListToggle.setAttribute("aria-expanded", String(visible));
   publicMemberListToggle.textContent = publicMemberListExpanded
-    ? "Hide Members Contribution"
-    : "View All Members Contribution";
+    ? "Hide Members"
+    : "View All Members";
 }
 
 publicMemberListToggle.addEventListener("click", () => {
