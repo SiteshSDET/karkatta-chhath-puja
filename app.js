@@ -741,7 +741,11 @@ function renderPublicMemberRows(data = members) {
 }
 
 const publicMemberListToggle = document.querySelector("#public-member-list-toggle");
+let memberDialogScrollY = 0;
 publicMemberListToggle.addEventListener("click", () => {
+  memberDialogScrollY = window.scrollY;
+  document.body.style.setProperty("--member-dialog-scroll-y", `-${memberDialogScrollY}px`);
+  document.body.classList.add("member-dialog-open");
   publicMemberDialog.showModal();
   publicMemberListToggle.setAttribute("aria-expanded", "true");
   publicMemberSearch.focus();
@@ -751,9 +755,12 @@ document.querySelector("#public-member-dialog-close").addEventListener("click", 
 });
 publicMemberDialog.addEventListener("close", () => {
   publicMemberListToggle.setAttribute("aria-expanded", "false");
+  document.body.classList.remove("member-dialog-open");
+  document.body.style.removeProperty("--member-dialog-scroll-y");
+  window.scrollTo(0, memberDialogScrollY);
 });
-publicMemberDialog.addEventListener("click", (event) => {
-  if (event.target === publicMemberDialog) publicMemberDialog.close();
+publicMemberDialog.addEventListener("cancel", (event) => {
+  event.preventDefault();
 });
 
 function renderPublicRegister(data = members, year = eventYear, title = eventTitle) {

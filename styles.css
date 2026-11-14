@@ -530,6 +530,7 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
 .public-member-list-toggle { display: inline-flex; margin: 0 0 14px; }
 .public-member-dialog { width: min(920px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); margin: auto; padding: 20px; overflow: hidden; border: 1px solid #ead9c4; border-radius: 18px; background: #fffdf9; box-shadow: 0 24px 80px #24170d55; }
 .public-member-dialog::backdrop { background: #211710a8; backdrop-filter: blur(3px); }
+.member-dialog-open { position: fixed; top: var(--member-dialog-scroll-y); width: 100%; overflow: hidden; }
 .public-member-dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
 .public-member-dialog-heading h2 { margin: 0; color: var(--maroon); font-family: var(--font-display); font-size: 24px; }
 .public-member-dialog .public-table-scroll { max-height: calc(100dvh - 150px); overflow: auto; }
