@@ -73,6 +73,10 @@ const memberSearch = document.querySelector("#member-search");
 const publicMemberSearch = document.querySelector("#public-member-search");
 const publicMemberRows = document.querySelector("#public-member-rows");
 const memberCards = document.querySelector("#member-cards");
+const memberPhotoViewer = document.querySelector("#member-photo-viewer");
+const memberPhotoViewerImage = document.querySelector("#member-photo-viewer-image");
+const memberPhotoViewerPlaceholder = document.querySelector("#member-photo-viewer-placeholder");
+const memberPhotoViewerName = document.querySelector("#member-photo-viewer-name");
 const publicRefreshButton = document.querySelector("#public-refresh");
 const publicRefreshStatus = document.querySelector("#public-refresh-status");
 const managerRefreshButton = document.querySelector("#manager-refresh");
@@ -841,8 +845,10 @@ function memberInitials(name) {
 function renderMemberCards(data = members) {
   const fragment = document.createDocumentFragment();
   data.forEach((member, index) => {
-    const card = document.createElement("article");
+    const card = document.createElement("button");
+    card.type = "button";
     card.className = "member-card";
+    card.setAttribute("aria-label", `View photo for ${member.name || "New member"}`);
     const frame = document.createElement("div");
     frame.className = "member-photo-frame";
     frame.style.background = `linear-gradient(145deg, ${["#f2d9b8, #c67d50 55%, #773c3d", "#e7d6b7, #a77753 55%, #513847", "#f0d7b0, #b45c4d 55%, #65394b", "#e8d6c3, #bd8c53 55%, #4b5360"][index % 4]})`;
@@ -852,6 +858,7 @@ function renderMemberCards(data = members) {
       photo.src = photoUrl;
       photo.alt = `${member.name || "Member"} photo`;
       frame.append(photo);
+      card.dataset.photoUrl = photoUrl;
     } else {
       const initials = document.createElement("span");
       initials.className = "member-initials";
@@ -873,6 +880,35 @@ function renderMemberCards(data = members) {
   });
   memberCards.replaceChildren(fragment);
 }
+
+memberCards.addEventListener("click", (event) => {
+  if (!(event.target instanceof Element)) return;
+  const card = event.target.closest(".member-card");
+  if (!card) return;
+  const name = card.querySelector(".member-card-copy strong")?.textContent || "Member";
+  memberPhotoViewerName.textContent = name;
+  if (card.dataset.photoUrl) {
+    memberPhotoViewerImage.src = card.dataset.photoUrl;
+    memberPhotoViewerImage.alt = `${name} photo`;
+    memberPhotoViewerImage.hidden = false;
+    memberPhotoViewerPlaceholder.hidden = true;
+  } else {
+    memberPhotoViewerImage.removeAttribute("src");
+    memberPhotoViewerImage.alt = "";
+    memberPhotoViewerImage.hidden = true;
+    memberPhotoViewerPlaceholder.textContent = memberInitials(name);
+    memberPhotoViewerPlaceholder.hidden = false;
+  }
+  memberPhotoViewer.showModal();
+});
+
+document.querySelector("#member-photo-viewer-close").addEventListener("click", () => {
+  memberPhotoViewer.close();
+});
+
+memberPhotoViewer.addEventListener("click", (event) => {
+  if (event.target === memberPhotoViewer) memberPhotoViewer.close();
+});
 
 function populateMemberPhotoSelect() {
   const selectedMemberId = memberPhotoSelect.value;
