@@ -508,7 +508,7 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
 .member-photo-viewer::backdrop { background: #160d0bb5; backdrop-filter: blur(5px); }
 .member-photo-viewer img { display: block; width: 100%; max-height: calc(100dvh - 110px); object-fit: contain; border: 5px solid #fffaf0; border-radius: 14px; background: #261b17; box-shadow: 0 8px 26px #49372130; }
 .photo-celebration-burst { position: absolute; z-index: 3; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
-.photo-celebration-burst span { position: absolute; top: -18px; left: var(--start); width: 9px; height: 14px; border-radius: 2px; opacity: 0; background: var(--confetti); }
+.photo-celebration-burst span { position: absolute; bottom: -18px; left: var(--start); width: 9px; height: 14px; border-radius: 2px; opacity: 0; background: var(--confetti); }
 .photo-celebration-burst.is-celebrating span { animation: photo-confetti-fall 4.2s cubic-bezier(.18,.52,.32,1) var(--delay) both; }
 .photo-celebration-burst span:nth-child(12n + 1) { --start: 3%; --drift: 46px; --delay: 0ms; --confetti: #d78a27; }
 .photo-celebration-burst span:nth-child(12n + 2) { --start: 12%; --drift: -34px; --delay: 160ms; --confetti: #43856a; }
@@ -523,10 +523,10 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
 .photo-celebration-burst span:nth-child(12n + 11) { --start: 93%; --drift: 34px; --delay: 360ms; --confetti: #5478c8; }
 .photo-celebration-burst span:nth-child(12n) { --start: 98%; --drift: -52px; --delay: 520ms; --confetti: #c24f8b; }
 @keyframes photo-confetti-fall {
-  0% { opacity: 0; transform: translate3d(0, -10px, 0) rotate(0) scale(.5); }
+  0% { opacity: 0; transform: translate3d(0, 10px, 0) rotate(0) scale(.5); }
   10% { opacity: 1; }
   88% { opacity: 1; }
-  100% { opacity: 0; transform: translate3d(var(--drift), 78vh, 0) rotate(900deg) scale(1.15); }
+  100% { opacity: 0; transform: translate3d(var(--drift), -78vh, 0) rotate(900deg) scale(1.15); }
 }
 .member-photo-viewer-close { position: absolute; z-index: 4; top: 21px; right: 21px; width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid #ffffffa8; border-radius: 50%; background: #271b19c9; color: #fff; font-size: 28px; line-height: 1; cursor: pointer; }
 .member-photo-viewer-name { margin: 12px 0 2px; color: #573322; font-family: var(--font-display); font-size: 20px; font-weight: 700; }
