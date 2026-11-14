@@ -577,7 +577,69 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
 
 [hidden] { display: none !important; }
 
+/* Crisp, consistent finish across the public page and admin workspace. */
+body {
+  background:
+    radial-gradient(ellipse at 8% 18%, #f5eadb88, transparent 30rem),
+    radial-gradient(ellipse at 92% 52%, #e8f1eb66, transparent 34rem),
+    var(--paper);
+}
+.site-header { border-bottom-color: #e2d4c1; box-shadow: 0 7px 22px #38281914; }
+.hero { min-height: 456px; }
+.hero-content { text-shadow: 0 2px 18px #24100c40; }
+.hero-description { text-shadow: none; }
+.member-gallery-section, .public-register, .accounts-section, .gallery-section {
+  border-color: #e4ddd2;
+  box-shadow: 0 18px 44px #352a1b10, 0 2px 8px #352a1b08;
+}
+.member-gallery-section { border-color: #cfe2d9; }
+.public-register { border-color: #ead9c4; }
+.gallery-section { border-color: #ded8eb; }
+.accounts-section { border-color: #cee0d5; }
+.section-heading > div:first-child {
+  border-color: #ffffffeb;
+  box-shadow: 0 8px 22px #372b1c12, inset 0 1px #fff;
+}
+.member-cards { scroll-padding-inline: 8px; }
+.member-card { -webkit-tap-highlight-color: transparent; }
+.member-photo-frame img { image-rendering: auto; }
+.gallery-card, .media-card, .manager-member-photo-item {
+  box-shadow: 0 10px 24px #30271d12;
+}
+.gallery-card img, .gallery-card video { background-color: #362925; }
+.summary-card, .account-card {
+  box-shadow: 0 9px 22px #30271d10, inset 0 1px #ffffffc9;
+}
+.table-scroll { border-color: #e3dbcf; box-shadow: 0 6px 18px #352a1b0a; }
+.member-table tbody tr { transition: background-color .15s ease; }
+.manager-heading { border-color: #804039; }
+.manager-panel { border-color: #e6ded2; box-shadow: 0 12px 30px #352a1b10; }
+.manager-panel-heading { border-color: #e9e0d4; box-shadow: 0 4px 12px #352a1b08; }
+.settings-form label, .gallery-manager-controls label, .expense-entry-form label {
+  color: #565951;
+  font-size: 12px;
+  font-weight: 600;
+}
+.settings-input, .member-input, .expense-input {
+  border-color: #d8d1c6;
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.settings-input:focus, .member-input:focus, .expense-input:focus {
+  box-shadow: 0 0 0 3px #c9945828;
+}
+.member-photo-viewer { border-color: #edd7ad; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
 @media (max-width: 700px) {
+  .hero { min-height: 400px; }
+  .member-gallery-section, .public-register, .accounts-section, .gallery-section {
+    box-shadow: 0 12px 30px #352a1b10;
+  }
+  .section-heading h2 { font-size: 27px; }
+  .member-card { border-radius: 16px; }
+  .manager-panel-heading h3 { font-size: 19px; }
   .site-header { width: 100%; height: auto; min-height: 72px; padding: 0 14px; gap: 8px; }
   .brand { min-width: 0; gap: 7px; }
   .brand-mark { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 12px; background: linear-gradient(145deg, #fff1d8, #f4d8b2); box-shadow: 0 4px 10px #74421b18; }
