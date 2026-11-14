@@ -741,7 +741,7 @@ document.querySelector("#public-member-list-toggle").addEventListener("click", (
   const expanded = button.getAttribute("aria-expanded") !== "true";
   section.classList.toggle("show-member-list", expanded);
   button.setAttribute("aria-expanded", String(expanded));
-  button.textContent = expanded ? "Hide members" : "View all members";
+  button.textContent = expanded ? "Hide Members Contribution" : "View All Members Contribution";
 });
 
 function renderPublicRegister(data = members, year = eventYear, title = eventTitle) {

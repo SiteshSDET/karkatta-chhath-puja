@@ -480,6 +480,19 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
 .public-member-table tbody tr:nth-child(even) { background: #fffaf3; }
 .public-member-table tfoot th, .public-member-table tfoot td { background: #f2e6d5; }
 .public-member-list-toggle { display: none; }
+.public-member-list-toggle.button {
+  border: 1px solid #a9502a;
+  background: linear-gradient(115deg, #a63d30, #d27b2f);
+  color: #fff;
+  box-shadow: 0 5px 14px #9d482d40, inset 0 1px #ffffff40;
+  letter-spacing: .02em;
+}
+.public-member-list-toggle.button:hover {
+  border-color: #853124;
+  background: linear-gradient(115deg, #853124, #bb6426);
+  box-shadow: 0 7px 18px #9d482d50, inset 0 1px #ffffff40;
+}
+.public-member-list-toggle.button:focus-visible { outline: 3px solid #e8ad58; outline-offset: 3px; }
 
 .gallery-cards { gap: 20px; }
 .gallery-card { border-color: #e2d9ed; border-radius: 17px; box-shadow: 0 12px 28px #46366c12; transition: transform .2s, box-shadow .2s; }
