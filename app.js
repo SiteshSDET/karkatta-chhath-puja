@@ -855,7 +855,12 @@ function renderMemberCards(data = members) {
     const numberBadge = document.createElement("span");
     numberBadge.className = "member-number-badge";
     numberBadge.setAttribute("aria-hidden", "true");
-    numberBadge.textContent = "DBCP";
+    const badgeRibbons = document.createElement("span");
+    badgeRibbons.className = "member-number-badge-ribbons";
+    const badgeLabel = document.createElement("span");
+    badgeLabel.className = "member-number-badge-label";
+    badgeLabel.textContent = "DBCP";
+    numberBadge.append(badgeRibbons, badgeLabel);
     frame.append(numberBadge);
     const photoUrl = member.photo_path ? storageObjectUrl(member.photo_path) : null;
     if (photoUrl) {
