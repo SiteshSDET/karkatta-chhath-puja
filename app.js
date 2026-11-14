@@ -519,7 +519,7 @@ publicRefreshButton.addEventListener("click", async () => {
 
 managerRefreshButton.addEventListener("click", async () => {
   if (!authSession || authSession.expires_at <= Date.now() / 1000) {
-    editorStatus.textContent = "Your admin session has expired. Sign in again before refreshing Manager data.";
+    editorStatus.textContent = "Your admin session has expired. Sign in again before refreshing admin data.";
     editorStatus.classList.add("is-error");
     return;
   }
@@ -743,7 +743,7 @@ function renderPublicRegister(data = members, year = eventYear, title = eventTit
   document.querySelector("#public-member-total").textContent = numberFormat.format(data.length);
   document.querySelector("#public-pledged-total").textContent = `₹${numberFormat.format(pledged)}`;
   document.querySelector("#public-received-total").textContent = `₹${numberFormat.format(received)}`;
-  document.querySelector("#public-carry-forward-label").textContent = `${year - 1} carry-forward`;
+  document.querySelector("#public-carry-forward-label").textContent = "Last Year Carry Forward";
   document.querySelector("#public-carry-forward-amount").textContent = `₹${numberFormat.format(financeCarryForward)}`;
   document.querySelector("#public-carry-forward-note").textContent = `included in ${year} Hisab balance`;
   document.querySelector("#public-table-pledged").textContent = `₹${numberFormat.format(pledged)}`;
@@ -770,7 +770,7 @@ function renderAccounts() {
   const carryForward = hasRegisterCollection ? financeCarryForward : null;
   const balance = collected === null ? null : collected + carryForward - expenditure;
   document.querySelector("#accounts-year").textContent = String(year);
-  document.querySelector("#accounts-carry-forward-year-label").textContent = `${year - 1} carry-forward`;
+  document.querySelector("#accounts-carry-forward-year-label").textContent = "Last Year Carry Forward";
   document.querySelector("#account-carry-forward").textContent = carryForward === null ? "—" : `₹${numberFormat.format(carryForward)}`;
   document.querySelector("#account-collected").textContent = collected === null ? "—" : `₹${numberFormat.format(collected)}`;
   document.querySelector("#account-expenditure").textContent = `₹${numberFormat.format(expenditure)}`;
@@ -985,8 +985,8 @@ function renderManagerExpenseTotals() {
   document.querySelector("#manager-account-carry-forward").textContent = `₹${numberFormat.format(carryForward)}`;
   document.querySelector("#manager-account-expenditure").textContent = `₹${numberFormat.format(expenditure)}`;
   document.querySelector("#manager-account-year-label").textContent = `in ${eventYear}`;
-  document.querySelector("#manager-carry-forward-label").textContent = `${eventYear - 1} carry-forward (₹)`;
-  document.querySelector("#manager-carry-forward-summary-label").textContent = `${eventYear - 1} carry-forward`;
+  document.querySelector("#manager-carry-forward-label").textContent = "Last Year Carry Forward (₹)";
+  document.querySelector("#manager-carry-forward-summary-label").textContent = "Last Year Carry Forward";
   document.querySelector("#manager-account-balance").textContent = `₹${numberFormat.format(collected + carryForward - expenditure)}`;
 }
 
@@ -1061,7 +1061,7 @@ function applyEventSettings() {
   document.querySelector("#hero-event-label").textContent = eventTitle;
   document.querySelector("#hero-event-year").textContent = String(eventYear);
   document.querySelector("#register-panel-title").textContent = `${eventTitle} members register ${eventYear}`;
-  document.querySelector("#carry-forward-label").textContent = `${eventYear - 1} carry-forward`;
+  document.querySelector("#carry-forward-label").textContent = "Last Year Carry Forward";
   document.querySelector("#carry-forward-amount").textContent = `₹${numberFormat.format(financeCarryForward)}`;
   document.querySelector("#carry-forward-note").textContent = `included in ${eventYear} Hisab balance`;
   document.querySelector(".register-footnote").textContent = `Source: attached ${eventTitle} ${eventYear} register. The ${eventYear - 1} fund balance is shown separately.`;
@@ -1178,7 +1178,7 @@ loginForm.addEventListener("submit", async (event) => {
       throw new Error(message);
     }
     if (result.user?.app_metadata?.register_admin !== true) {
-      throw new Error("This account is not authorized for Manager. In Supabase, set app_metadata.register_admin to true for this user, then sign out and sign in again.");
+      throw new Error("This account is not authorized for Admin. In Supabase, set app_metadata.register_admin to true for this user, then sign out and sign in again.");
     }
     authSession = {
       access_token: result.access_token,
