@@ -536,7 +536,7 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
 .public-member-dialog .public-member-search { flex: 0 0 auto; }
 .public-member-dialog .public-table-scroll { flex: 1 1 auto; min-height: 0; max-height: none; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
 .hero-description, .section-aside, .section-description, .gallery-card-copy p,
-.public-register .summary-card small, .accounts-section .account-card small,
+.public-register .summary-card small,
 .public-register .register-footnote { display: none; }
 .public-member-list-toggle.button {
   border: 1px solid #a9502a;
