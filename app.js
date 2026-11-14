@@ -854,6 +854,23 @@ function memberInitials(name) {
   return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0] || "").join("").toLocaleUpperCase() || "?";
 }
 
+function playPhotoCelebration() {
+  const burst = memberPhotoViewer.querySelector(".photo-celebration-burst");
+  burst.classList.remove("is-celebrating");
+  void burst.offsetWidth;
+  burst.classList.add("is-celebrating");
+}
+
+function openPhotoViewer(source, name, alt = name) {
+  memberPhotoViewerName.textContent = name;
+  memberPhotoViewerImage.src = source;
+  memberPhotoViewerImage.alt = alt;
+  memberPhotoViewerImage.hidden = false;
+  memberPhotoViewerPlaceholder.hidden = true;
+  memberPhotoViewer.showModal();
+  playPhotoCelebration();
+}
+
 function renderMemberCards(data = members) {
   const fragment = document.createDocumentFragment();
   data.forEach((member, index) => {
@@ -893,20 +910,18 @@ memberCards.addEventListener("click", (event) => {
   const card = event.target.closest(".member-card");
   if (!card) return;
   const name = card.querySelector(".member-card-copy strong")?.textContent || "Member";
-  memberPhotoViewerName.textContent = name;
   if (card.dataset.photoUrl) {
-    memberPhotoViewerImage.src = card.dataset.photoUrl;
-    memberPhotoViewerImage.alt = `${name} photo`;
-    memberPhotoViewerImage.hidden = false;
-    memberPhotoViewerPlaceholder.hidden = true;
+    openPhotoViewer(card.dataset.photoUrl, name, `${name} photo`);
   } else {
+    memberPhotoViewerName.textContent = name;
     memberPhotoViewerImage.removeAttribute("src");
     memberPhotoViewerImage.alt = "";
     memberPhotoViewerImage.hidden = true;
     memberPhotoViewerPlaceholder.textContent = memberInitials(name);
     memberPhotoViewerPlaceholder.hidden = false;
+    memberPhotoViewer.showModal();
+    playPhotoCelebration();
   }
-  memberPhotoViewer.showModal();
 });
 
 document.querySelector("#member-photo-viewer-close").addEventListener("click", () => {
@@ -1912,6 +1927,34 @@ const galleryCards = document.querySelector("#gallery-cards");
 const galleryEmpty = document.querySelector("#gallery-empty");
 const mediaUploadYear = document.querySelector("#media-upload-year");
 const managerGalleryYearFilter = document.querySelector("#manager-gallery-year-filter");
+
+function handleGalleryPhotoClick(event) {
+  if (!(event.target instanceof HTMLImageElement)) return;
+  openGalleryPhoto(event.target);
+}
+
+function openGalleryPhoto(image) {
+  const card = image.closest(".gallery-card, .media-card");
+  if (!card) return;
+  const name = card.querySelector(".media-name, h3")?.textContent?.trim() || image.alt || "Chhath celebration";
+  openPhotoViewer(image.currentSrc || image.src, name, image.alt || name);
+}
+
+galleryCards.addEventListener("click", handleGalleryPhotoClick);
+mediaGrid.addEventListener("click", handleGalleryPhotoClick);
+galleryCards.addEventListener("keydown", (event) => {
+  if ((event.key === "Enter" || event.key === " ") && event.target instanceof HTMLImageElement) {
+    event.preventDefault();
+    openGalleryPhoto(event.target);
+  }
+});
+mediaGrid.addEventListener("keydown", (event) => {
+  if ((event.key === "Enter" || event.key === " ") && event.target instanceof HTMLImageElement) {
+    event.preventDefault();
+    openGalleryPhoto(event.target);
+  }
+});
+
 mediaInput.disabled = true;
 memberPhotoInput.disabled = true;
 heroPhotoInput.disabled = true;
@@ -2099,6 +2142,9 @@ function createMediaCard(item, manager = false) {
     preview.preload = "metadata";
   } else {
     preview.alt = item.name;
+    preview.tabIndex = 0;
+    preview.setAttribute("role", "button");
+    preview.setAttribute("aria-label", `Open ${item.caption || item.name}`);
   }
   const name = document.createElement("div");
   name.className = "media-name";
