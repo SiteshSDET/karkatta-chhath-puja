@@ -122,13 +122,11 @@ Celebrating the beauty of Chhath in Karkatta.</p>
             <h2 id="accounts-title">Collection &amp; expenditure <span id="accounts-year">2026</span></h2>
             <p class="section-description">Totals reflect contributions marked as received in the member register.</p>
           </div>
-          <label class="accounts-year-control">Year
-            <select id="accounts-year-filter" class="settings-input" aria-label="Show hisab by year"></select>
-          </label>
-          <div class="accounts-actions">
+          <div class="accounts-controls">
+            <label class="accounts-year-control">Year
+              <select id="accounts-year-filter" class="settings-input" aria-label="Show hisab by year"></select>
+            </label>
             <button id="accounts-refresh" class="button button-outline" type="button">Refresh data</button>
-            <button id="accounts-view-pdf" class="button button-primary" type="button">View / Print PDF</button>
-            <button id="accounts-download-pdf" class="button button-outline" type="button">Download PDF</button>
           </div>
         </div>
         <p id="accounts-status" class="pdf-status" role="status" aria-live="polite"></p>
@@ -150,6 +148,10 @@ Celebrating the beauty of Chhath in Karkatta.</p>
             </table>
           </div>
           <p id="public-expense-empty" class="accounts-empty" hidden>No expenditure has been recorded yet.</p>
+        </div>
+        <div class="accounts-actions">
+          <button id="accounts-view-pdf" class="button button-primary" type="button">View / Print PDF</button>
+          <button id="accounts-download-pdf" class="button button-outline" type="button">Download PDF</button>
         </div>
       </section>
 

@@ -276,9 +276,10 @@ button { color: inherit; }
   box-shadow: 0 16px 38px #315d4a0d;
 }
 .accounts-heading { align-items: flex-start; }
+.accounts-controls { display: flex; align-items: stretch; gap: 8px; }
 .accounts-year-control { width: 110px; display: grid; gap: 5px; padding: 10px; border: 1px solid #cfe2d7; border-radius: 12px; background: #ffffffc9; color: #386652; font-size: 9px; font-weight: 800; }
 .accounts-year-control .settings-input { height: 36px; border-color: #cfe2d7; border-radius: 8px; color: #285d46; font-size: 13px; font-weight: 700; }
-.accounts-actions { max-width: 430px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.accounts-actions { max-width: 430px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin: 14px 0 0 auto; }
 .accounts-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 23px 0 17px; }
 .account-card { position: relative; min-width: 0; min-height: 116px; display: grid; align-content: start; gap: 6px; padding: 17px; overflow: hidden; border: 1px solid #dce8df; border-top: 3px solid #378466; border-radius: 15px; background: linear-gradient(145deg, #fff, #eff9f3); box-shadow: 0 8px 20px #244b3a0c; }
 .account-card::after { position: absolute; right: -17px; bottom: -27px; width: 76px; height: 76px; border: 11px solid #ffffff80; border-radius: 50%; content: ""; pointer-events: none; }
@@ -711,20 +712,29 @@ body {
   .gallery-manager-controls { grid-template-columns: 1fr; gap: 9px; }
   .accounts-heading { align-items: flex-start; flex-direction: column; gap: 14px; }
   .accounts-heading > div:first-child { width: 100%; }
-  .accounts-year-control { width: 100%; grid-template-columns: auto minmax(100px, 1fr); align-items: center; }
-  .accounts-actions { width: 100%; max-width: none; display: grid; grid-template-columns: 1fr; }
+  .accounts-controls { width: 100%; align-items: center; }
+  .accounts-year-control { width: auto; min-width: 0; flex: 1 1 auto; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 7px; padding: 7px 9px; }
+  .accounts-controls > #accounts-refresh { min-height: 48px; flex: 0 0 auto; padding: 0 12px; font-size: 11px; }
+  .accounts-actions { width: 100%; max-width: none; display: grid; grid-template-columns: 1fr 1fr; margin-top: 12px; }
   .accounts-actions .button { width: 100%; }
   .accounts-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0; }
   .account-card { min-height: 87px; padding: 11px; border-radius: 12px; }
+  .accounts-section .section-description { margin-top: 6px; font-size: 9px; line-height: 1.4; }
+  .accounts-section .section-kicker, .accounts-year-control { font-size: 8px; }
+  .accounts-section .pdf-status { font-size: 8px; line-height: 1.3; }
+  .accounts-year-control .settings-input { height: 32px; font-size: 11px; }
+  .account-card > span { font-size: 9px; }
   .account-card > strong { font-size: 18px; }
-  .accounts-details-toggle { width: 100%; white-space: normal; }
-  .accounts-details { padding: 8px; }
+  .account-card > small, .accounts-empty { font-size: 8px; line-height: 1.3; }
+  .accounts-details-toggle { width: 100%; min-height: 38px; font-size: 11px; white-space: normal; }
+  .accounts-details { margin-top: 10px; padding: 8px; }
   .accounts-table { display: block; width: 100%; }
   .accounts-table thead { display: none; }
   .accounts-table tbody { display: grid; gap: 8px; }
   .accounts-table tbody tr { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 11px; border: 1px solid #dce8df; border-radius: 11px; background: #fff; }
   .accounts-table tbody td { width: 100%; height: auto; min-width: 0; padding: 0; display: grid; grid-template-columns: minmax(90px, 30%) minmax(0, 1fr); align-items: baseline; gap: 8px; border: 0; text-align: left !important; overflow-wrap: normal; word-break: normal; }
-  .accounts-table tbody td::before { content: attr(data-label); color: var(--muted); font-size: 9px; font-weight: 600; white-space: nowrap; }
+  .accounts-table tbody td { font-size: 10px; }
+  .accounts-table tbody td::before { content: attr(data-label); color: var(--muted); font-size: 8px; font-weight: 600; white-space: nowrap; }
   .accounts-table .accounts-date-value, .accounts-table .accounts-amount-value { white-space: nowrap; }
   .accounts-table tbody td:nth-child(2) .accounts-value { font-weight: 700; overflow-wrap: anywhere; }
   .accounts-table tfoot { display: none; }
