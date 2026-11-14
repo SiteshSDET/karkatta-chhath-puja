@@ -852,6 +852,11 @@ function renderMemberCards(data = members) {
     const frame = document.createElement("div");
     frame.className = "member-photo-frame";
     frame.style.background = `linear-gradient(145deg, ${["#f2d9b8, #c67d50 55%, #773c3d", "#e7d6b7, #a77753 55%, #513847", "#f0d7b0, #b45c4d 55%, #65394b", "#e8d6c3, #bd8c53 55%, #4b5360"][index % 4]})`;
+    const numberBadge = document.createElement("span");
+    numberBadge.className = "member-number-badge";
+    numberBadge.setAttribute("aria-hidden", "true");
+    numberBadge.textContent = String(index + 1).padStart(2, "0");
+    frame.append(numberBadge);
     const photoUrl = member.photo_path ? storageObjectUrl(member.photo_path) : null;
     if (photoUrl) {
       const photo = document.createElement("img");
@@ -864,11 +869,6 @@ function renderMemberCards(data = members) {
       initials.className = "member-initials";
       initials.textContent = memberInitials(member.name);
       frame.append(initials);
-      const mark = document.createElement("span");
-      mark.className = "member-photo-mark";
-      mark.setAttribute("aria-hidden", "true");
-      mark.textContent = "↗";
-      frame.append(mark);
     }
     const copy = document.createElement("div");
     copy.className = "member-card-copy";
@@ -1128,6 +1128,9 @@ function applyEventSettings() {
 
 function openEditor() {
   const signedIn = authSession && authSession.expires_at > Date.now() / 1000;
+  memberListToggle.setAttribute("aria-expanded", "false");
+  memberListToggle.textContent = "View members";
+  editorTableScroll.hidden = true;
   mediaAuthorized = Boolean(signedIn);
   mediaInput.disabled = !mediaAuthorized;
   chooseMediaButton.disabled = !mediaAuthorized;
@@ -1574,6 +1577,14 @@ document.querySelectorAll("[data-manager-tab]").forEach((tab) => {
       panel.hidden = panel.dataset.managerPanel !== tab.dataset.managerTab;
     });
   });
+});
+const memberListToggle = document.querySelector("#admin-member-list-toggle");
+const editorTableScroll = document.querySelector("#admin-member-table");
+memberListToggle.addEventListener("click", () => {
+  const expanded = memberListToggle.getAttribute("aria-expanded") !== "true";
+  memberListToggle.setAttribute("aria-expanded", String(expanded));
+  memberListToggle.textContent = expanded ? "Hide members" : "View members";
+  editorTableScroll.hidden = !expanded;
 });
 editorDialog.addEventListener("close", () => {
   loginForm.reset();

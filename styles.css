@@ -148,7 +148,7 @@ button { color: inherit; }
 .member-photo-frame::after { inset: 11px; border-color: #ffffff70; }
 .member-photo-frame img { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: cover; }
 .member-initials { z-index: 1; color: #fff9ec; font-family: var(--font-display); font-size: 41px; text-shadow: 0 2px 12px #44251e66; }
-.member-photo-mark { position: absolute; z-index: 2; right: 9px; bottom: 8px; width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid #ffffffad; border-radius: 50%; background: #352c25b8; color: #fff; font-size: 15px; }
+.member-number-badge { position: absolute; z-index: 3; top: 10px; left: 10px; min-width: 31px; height: 25px; padding: 0 7px; display: grid; place-items: center; border: 1px solid #ffffffb8; border-radius: 999px; background: #34251fc9; color: #fff; font-size: 10px; font-weight: 800; letter-spacing: .06em; box-shadow: 0 3px 9px #1c100c44; }
 .member-card-copy { min-height: 57px; padding: 9px 10px 10px; }
 .member-card-copy { display: flex; align-items: center; justify-content: center; text-align: center; }
 .member-card-copy strong { min-width: 0; overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
@@ -294,6 +294,22 @@ button { color: inherit; }
 .account-balance { border-color: #d9e1ef; border-top-color: #687fac; background: linear-gradient(145deg, #fff, #f3f5fc); }
 .account-balance > strong { color: #4a5e88; }
 .account-balance > strong.is-negative { color: #b13630; }
+.public-register .summary-card:nth-child(1), .manager-panel[data-manager-panel="register"] .summary-card:nth-child(1) { border-color: #9dcbb5; border-top-color: #26815d; background: linear-gradient(145deg, #e6f7ee, #ccebd9); }
+.public-register .summary-card:nth-child(1) strong, .manager-panel[data-manager-panel="register"] .summary-card:nth-child(1) strong { color: #176345; }
+.public-register .summary-card:nth-child(2), .manager-panel[data-manager-panel="register"] .summary-card:nth-child(2) { border-color: #ebcb8b; border-top-color: #bd7818; background: linear-gradient(145deg, #fff4d8, #f8dfaa); }
+.public-register .summary-card:nth-child(2) strong, .manager-panel[data-manager-panel="register"] .summary-card:nth-child(2) strong { color: #86500c; }
+.public-register .summary-card:nth-child(3), .manager-panel[data-manager-panel="register"] .summary-card:nth-child(3) { border-color: #e7b5a8; border-top-color: #b64c3a; background: linear-gradient(145deg, #ffebe4, #f6d2c8); }
+.public-register .summary-card:nth-child(3) strong, .manager-panel[data-manager-panel="register"] .summary-card:nth-child(3) strong { color: #913827; }
+.public-register .summary-card:nth-child(4), .manager-panel[data-manager-panel="register"] .summary-card:nth-child(4) { border-color: #c9b9e2; border-top-color: #7354a2; background: linear-gradient(145deg, #f1eafd, #ded2f1); }
+.public-register .summary-card:nth-child(4) strong, .manager-panel[data-manager-panel="register"] .summary-card:nth-child(4) strong { color: #553b82; }
+.accounts-section .account-collection { border-color: #a7c7e8; border-top-color: #3172ad; background: linear-gradient(145deg, #e8f4ff, #d0e6fa); }
+.accounts-section .account-collection > span, .accounts-section .account-collection > strong { color: #245c90; }
+.accounts-section .account-carry-forward { border-color: #9ccbb5; border-top-color: #25815c; background: linear-gradient(145deg, #e5f7ed, #c9ebd8); }
+.accounts-section .account-carry-forward > span, .accounts-section .account-carry-forward > strong { color: #176345; }
+.accounts-section .account-expenses { border-color: #efc18d; border-top-color: #bd6b16; background: linear-gradient(145deg, #fff1dd, #f7d8af); }
+.accounts-section .account-expenses > span, .accounts-section .account-expenses > strong { color: #94500c; }
+.accounts-section .account-balance { border-color: #c3b4e1; border-top-color: #7354a2; background: linear-gradient(145deg, #f0eafd, #ddd2f2); }
+.accounts-section .account-balance > span, .accounts-section .account-balance > strong { color: #553b82; }
 .accounts-details-toggle { min-height: 42px; border-color: #bcd7c7; background: #fff; color: #28664d; }
 .accounts-details-toggle:hover { border-color: #6ea589; background: #f2faf5; }
 .accounts-details { margin-top: 14px; padding: 12px; border: 1px solid #dce8df; border-radius: 14px; background: #ffffffbf; }
@@ -481,6 +497,10 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
 .member-card:hover .member-photo-frame img { transform: scale(1.04); }
 .member-card-copy { position: absolute; z-index: 3; right: 5px; bottom: 5px; left: 5px; min-height: 62px; padding: 22px 10px 11px; display: flex; align-items: center; justify-content: center; border-radius: 0 0 12px 12px; background: linear-gradient(transparent, #172b26ed 45%); color: #fff; text-align: center; }
 .member-card-copy strong { width: 100%; color: #fff; font-size: 12px; font-weight: 700; line-height: 1.35; text-shadow: 0 1px 5px #0008; }
+.admin-member-list-toggle { margin: 0 0 12px; }
+.admin-register-save { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid #e8dfd3; }
+.admin-register-save .editor-status { margin: 0; }
+.admin-register-save #save-members { min-width: 140px; }
 .member-photo-viewer { position: fixed; inset: 50% auto auto 50%; width: min(760px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); margin: 0; padding: 14px; transform: translate(-50%, -50%); overflow: auto; border: 1px solid #f1d9a7; border-radius: 22px; background: linear-gradient(145deg, #fffaf0, #f4e4c8 55%, #e8ceb0); box-shadow: 0 26px 90px #160d0bc7; text-align: center; }
 .member-photo-viewer::backdrop { background: #160d0bb5; backdrop-filter: blur(5px); }
 .member-photo-viewer img { display: block; width: 100%; max-height: calc(100dvh - 110px); object-fit: contain; border: 5px solid #fffaf0; border-radius: 14px; background: #261b17; box-shadow: 0 8px 26px #49372130; }
@@ -674,7 +694,9 @@ body {
   .accounts-section { width: calc(100% - 36px); margin: 23px auto 0; padding: 20px 14px; border-radius: 19px; }
   .section-heading { gap: 12px; }
   .section-heading > div:first-child { width: 100%; min-width: 0; padding: 13px 14px; border-radius: 13px; }
-  .section-heading h2 { font-size: 25px; }
+  .section-heading h2 { font-size: 22px; letter-spacing: -.015em; }
+  .member-gallery-section .section-heading h2 { font-size: 23px; }
+  .register-heading h2, .accounts-heading h2, .gallery-section .section-heading h2 { font-size: 21px; }
   .section-aside { max-width: 120px; text-align: right; line-height: 1.4; }
   .gallery-section .section-heading { align-items: flex-end; gap: 8px; }
   .gallery-section .section-heading > div:first-child { width: auto; flex: 1 1 auto; }
@@ -764,6 +786,8 @@ body {
   .manager-panel-heading h3 { font-size: 18px; }
   .manager-register-summary { grid-template-columns: 1fr; gap: 7px; }
   .manager-register-summary .summary-card { min-height: 78px; }
+  .admin-member-list-toggle, .admin-register-save #save-members { width: 100%; }
+  .admin-register-save { align-items: stretch; }
   .carry-forward-editor { grid-template-columns: 1fr; gap: 7px; padding: 11px; }
   .carry-forward-editor p { grid-column: auto; }
   .expense-entry-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; padding: 11px; }

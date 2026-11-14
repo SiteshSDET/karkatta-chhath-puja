@@ -234,10 +234,9 @@ Celebrating the beauty of Chhath in Karkatta.</p>
             <button id="manager-view-pdf" class="button button-outline" type="button">View / Print PDF</button>
             <button id="manager-download-pdf" class="button button-outline" type="button">Download PDF</button>
             <button id="manager-refresh" class="button button-outline" type="button">Refresh data</button>
-            <button id="save-members" class="button button-primary" type="button">Save changes</button>
           </div>
-          <p id="editor-status" class="editor-status" role="status" aria-live="polite">Unsaved edits will not be shared until you save.</p>
-          <div class="table-scroll editor-table-scroll">
+          <button id="admin-member-list-toggle" class="button button-outline admin-member-list-toggle" type="button" aria-controls="admin-member-table" aria-expanded="false">View members</button>
+          <div id="admin-member-table" class="table-scroll editor-table-scroll" hidden>
             <table class="member-table editor-table">
               <thead><tr><th scope="col" class="number-column">No.</th><th scope="col">Member</th><th scope="col" class="amount-column">Pledged (₹)</th><th scope="col" class="paid-column">Paid</th><th scope="col" class="amount-column">Received (₹)</th><th scope="col" class="remove-column"><span class="visually-hidden">Remove</span></th></tr></thead>
               <tbody id="editor-rows"></tbody>
@@ -245,6 +244,10 @@ Celebrating the beauty of Chhath in Karkatta.</p>
             </table>
           </div>
           <p class="register-footnote">Source: attached Chhath Puja register. The previous year's carry-forward is shown separately.</p>
+          <div class="admin-register-save">
+            <p id="editor-status" class="editor-status" role="status" aria-live="polite">Unsaved edits will not be shared until you save.</p>
+            <button id="save-members" class="button button-primary" type="button">Save changes</button>
+          </div>
         </section>
         <section class="manager-panel" data-manager-panel="settings" aria-labelledby="settings-panel-title" hidden>
           <div class="manager-panel-heading">
