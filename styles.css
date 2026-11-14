@@ -43,8 +43,19 @@ button { color: inherit; }
   align-items: center;
   justify-content: space-between;
   background: #fbf8f2f2;
+  border-bottom: 1px solid #e7d8c4;
+  box-shadow: 0 8px 20px #4937210d;
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
+}
+.site-header::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #c97e32 24%, #762c25 50%, #c97e32 76%, transparent);
+  content: "";
 }
 
 .brand {
@@ -386,7 +397,8 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
 .editor-table thead { position: sticky; top: 0; z-index: 1; }
 .editor-table tfoot { position: sticky; bottom: 0; }
 
-.site-footer { width: min(1120px, calc(100% - 64px)); min-height: 100px; margin: 74px auto 0; display: flex; align-items: center; gap: 9px; border-top: 1px solid var(--line); color: #777168; font-size: 11px; }
+.site-footer { position: relative; width: min(1120px, calc(100% - 64px)); min-height: 100px; margin: 74px auto 0; padding-top: 14px; display: flex; align-items: center; gap: 9px; border-top: 1px solid #dfd1bd; color: #777168; font-size: 11px; }
+.site-footer::before { position: absolute; top: -1px; left: 0; width: 76px; height: 3px; border-radius: 0 0 3px 3px; background: linear-gradient(90deg, #762c25, #c97e32); content: ""; }
 .footer-sun { color: var(--saffron); font-size: 22px; }
 .footer-year { margin-left: auto; color: #999187; font-size: 9px; font-weight: 700; letter-spacing: .13em; }
 
