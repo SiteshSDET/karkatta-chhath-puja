@@ -867,7 +867,7 @@ function renderMemberCards(data = members) {
       const mark = document.createElement("span");
       mark.className = "member-photo-mark";
       mark.setAttribute("aria-hidden", "true");
-      mark.textContent = "+";
+      mark.textContent = "↗";
       frame.append(mark);
     }
     const copy = document.createElement("div");
