@@ -36,9 +36,9 @@ button { color: inherit; }
   position: sticky;
   z-index: 20;
   top: 0;
-  width: min(1120px, calc(100% - 64px));
+  width: 100%;
   height: 82px;
-  margin: 0 auto;
+  padding: 0 max(32px, calc((100% - 1120px) / 2));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -397,8 +397,8 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
 .editor-table thead { position: sticky; top: 0; z-index: 1; }
 .editor-table tfoot { position: sticky; bottom: 0; }
 
-.site-footer { position: relative; width: min(1120px, calc(100% - 64px)); min-height: 100px; margin: 74px auto 0; padding-top: 14px; display: flex; align-items: center; gap: 9px; border-top: 1px solid #dfd1bd; color: #777168; font-size: 11px; }
-.site-footer::before { position: absolute; top: -1px; left: 0; width: 76px; height: 3px; border-radius: 0 0 3px 3px; background: linear-gradient(90deg, #762c25, #c97e32); content: ""; }
+.site-footer { position: relative; width: 100%; min-height: 100px; margin: 74px auto 0; padding: 14px max(32px, calc((100% - 1120px) / 2)) 0; display: flex; align-items: center; gap: 9px; border-top: 1px solid #dfd1bd; background: linear-gradient(180deg, #f3eadc, #f9f4eb 70%); color: #777168; font-size: 11px; }
+.site-footer::before { position: absolute; top: -1px; left: max(32px, calc((100% - 1120px) / 2)); width: 76px; height: 3px; border-radius: 0 0 3px 3px; background: linear-gradient(90deg, #762c25, #c97e32); content: ""; }
 .footer-sun { color: var(--saffron); font-size: 22px; }
 .footer-year { margin-left: auto; color: #999187; font-size: 9px; font-weight: 700; letter-spacing: .13em; }
 
@@ -563,7 +563,7 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
 [hidden] { display: none !important; }
 
 @media (max-width: 700px) {
-  .site-header { width: calc(100% - 28px); height: auto; min-height: 72px; gap: 8px; }
+  .site-header { width: 100%; height: auto; min-height: 72px; padding: 0 14px; gap: 8px; }
   .brand { min-width: 0; gap: 7px; }
   .brand-mark { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 12px; background: linear-gradient(145deg, #fff1d8, #f4d8b2); box-shadow: 0 4px 10px #74421b18; }
   .brand-mark svg { width: 26px; height: 26px; }
@@ -655,6 +655,14 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
+  .member-editor.is-login {
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    width: min(440px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    transform: translate(-50%, -50%);
+  }
   dialog.member-editor[open].is-manager { height: auto; }
   .admin-login { padding-bottom: max(8px, env(safe-area-inset-bottom)); }
   .admin-login label input { min-height: 44px; font-size: 16px; }
@@ -722,11 +730,12 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
   .editor-table tfoot td:nth-child(5)::before { content: "Received"; }
   .search-box { width: 100%; }
   .member-table:not(.editor-table) { min-width: 0; }
-  .site-footer { width: calc(100% - 36px); min-height: 82px; margin-top: 38px; }
+  .site-footer { width: 100%; min-height: 82px; margin-top: 38px; padding: 12px 18px 0; }
+  .site-footer::before { left: 18px; }
 }
 
 @media (max-width: 380px) {
-  .site-header { width: calc(100% - 20px); }
+  .site-header { width: 100%; padding: 0 10px; }
   .brand { gap: 5px; }
   .brand-mark { width: 34px; height: 34px; flex-basis: 34px; }
   .brand-copy strong { font-size: 12px; }

@@ -1103,6 +1103,8 @@ function openEditor() {
   updateSelectedMemberPhotoControls();
   loginForm.hidden = Boolean(signedIn);
   editorContent.hidden = !signedIn;
+  editorDialog.classList.toggle("is-login", !signedIn);
+  editorDialog.classList.toggle("is-manager", Boolean(signedIn));
   loginStatus.textContent = "";
   if (signedIn) prepareEditor();
   editorDialog.showModal();
@@ -1110,7 +1112,7 @@ function openEditor() {
 }
 
 function fitManagerDialogToViewport() {
-  if (!editorDialog.open || window.matchMedia("(min-width: 701px)").matches) return;
+  if (!editorDialog.open || editorDialog.classList.contains("is-login") || window.matchMedia("(min-width: 701px)").matches) return;
   const viewport = window.visualViewport;
   if (!viewport) return;
   const top = Math.max(8, viewport.offsetTop + 8);
@@ -1141,6 +1143,7 @@ function prepareEditor() {
   editorStatus.textContent = "Changes are not saved until you select Save.";
   editorStatus.classList.remove("is-error");
   editorDialog.classList.add("is-manager");
+  editorDialog.classList.remove("is-login");
   editorContent.hidden = false;
   loginForm.hidden = true;
 }
