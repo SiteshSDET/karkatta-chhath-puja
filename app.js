@@ -739,13 +739,23 @@ function renderPublicMemberRows(data = members) {
   publicMemberRows.replaceChildren(fragment);
 }
 
-document.querySelector("#public-member-list-toggle").addEventListener("click", (event) => {
-  const button = event.currentTarget;
-  const section = button.closest(".public-register");
-  const expanded = button.getAttribute("aria-expanded") !== "true";
-  section.classList.toggle("show-member-list", expanded);
-  button.setAttribute("aria-expanded", String(expanded));
-  button.textContent = expanded ? "Hide Members Contribution" : "View All Members Contribution";
+const publicMemberListToggle = document.querySelector("#public-member-list-toggle");
+const publicRegisterSection = publicMemberListToggle.closest(".public-register");
+let publicMemberListExpanded = false;
+
+function updatePublicMemberListVisibility() {
+  const searchActive = publicMemberSearch.value.trim().length > 0;
+  const visible = publicMemberListExpanded || searchActive;
+  publicRegisterSection.classList.toggle("show-member-list", visible);
+  publicMemberListToggle.setAttribute("aria-expanded", String(visible));
+  publicMemberListToggle.textContent = publicMemberListExpanded
+    ? "Hide Members Contribution"
+    : "View All Members Contribution";
+}
+
+publicMemberListToggle.addEventListener("click", () => {
+  publicMemberListExpanded = !publicMemberListExpanded;
+  updatePublicMemberListVisibility();
 });
 
 function renderPublicRegister(data = members, year = eventYear, title = eventTitle) {
@@ -1318,7 +1328,10 @@ editorRows.addEventListener("click", (event) => {
 });
 
 memberSearch.addEventListener("input", renderEditor);
-publicMemberSearch.addEventListener("input", () => renderPublicMemberRows());
+publicMemberSearch.addEventListener("input", () => {
+  renderPublicMemberRows();
+  updatePublicMemberListVisibility();
+});
 
 addMemberButton.addEventListener("click", () => {
   editorTableScroll.hidden = false;
