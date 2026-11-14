@@ -852,16 +852,6 @@ function renderMemberCards(data = members) {
     const frame = document.createElement("div");
     frame.className = "member-photo-frame";
     frame.style.background = `linear-gradient(145deg, ${["#f2d9b8, #c67d50 55%, #773c3d", "#e7d6b7, #a77753 55%, #513847", "#f0d7b0, #b45c4d 55%, #65394b", "#e8d6c3, #bd8c53 55%, #4b5360"][index % 4]})`;
-    const numberBadge = document.createElement("span");
-    numberBadge.className = "member-number-badge";
-    numberBadge.setAttribute("aria-hidden", "true");
-    const badgeRibbons = document.createElement("span");
-    badgeRibbons.className = "member-number-badge-ribbons";
-    const badgeLabel = document.createElement("span");
-    badgeLabel.className = "member-number-badge-label";
-    badgeLabel.textContent = "DBCP";
-    numberBadge.append(badgeRibbons, badgeLabel);
-    frame.append(numberBadge);
     const photoUrl = member.photo_path ? storageObjectUrl(member.photo_path) : null;
     if (photoUrl) {
       const photo = document.createElement("img");
