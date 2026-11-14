@@ -528,7 +528,8 @@ dialog.member-editor[open].is-manager .expense-table-scroll {
 .public-member-table tbody tr:nth-child(even) { background: #fffaf3; }
 .public-member-table tfoot th, .public-member-table tfoot td { background: #f2e6d5; }
 .public-member-list-toggle { display: inline-flex; margin: 0 0 14px; }
-.public-member-dialog { width: min(920px, calc(100vw - 32px)); height: min(780px, calc(100dvh - 48px)); max-width: none; max-height: none; margin: auto; padding: 20px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #ead9c4; border-radius: 18px; background: #fffdf9; box-shadow: 0 24px 80px #24170d55; }
+dialog.public-member-dialog:not([open]) { display: none; }
+dialog.public-member-dialog[open] { position: fixed; inset: 0; width: min(920px, calc(100vw - 32px)); height: min(780px, calc(100dvh - 48px)); max-width: none; max-height: none; margin: auto; padding: 20px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #ead9c4; border-radius: 18px; background: #fffdf9; box-shadow: 0 24px 80px #24170d55; }
 .public-member-dialog::backdrop { background: #211710a8; backdrop-filter: blur(3px); }
 .member-dialog-open { position: fixed; top: var(--member-dialog-scroll-y); width: 100%; overflow: hidden; }
 .public-member-dialog-heading { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
@@ -754,7 +755,7 @@ body {
   .public-register .summary-card strong { font-size: 18px; }
   .public-member-list-toggle { width: 100%; margin: 0 0 12px; display: flex; }
   .public-table-scroll { overflow: visible; border: 0; background: transparent; }
-  .public-member-dialog { width: calc(100vw - 24px); height: min(780px, calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom))); padding: 13px; border-radius: 15px; }
+  dialog.public-member-dialog[open] { width: calc(100vw - 24px); height: min(780px, calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom))); padding: 13px; border-radius: 15px; }
   .public-member-dialog-heading h2 { font-size: 20px; }
   .public-member-table { display: block; width: 100%; }
   .public-member-table thead { display: none; }
