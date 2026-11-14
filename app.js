@@ -72,6 +72,7 @@ const membersTrigger = document.querySelector("#members-trigger");
 const memberSearch = document.querySelector("#member-search");
 const publicMemberSearch = document.querySelector("#public-member-search");
 const publicMemberRows = document.querySelector("#public-member-rows");
+const publicMemberDialog = document.querySelector("#public-member-dialog");
 const memberCards = document.querySelector("#member-cards");
 const memberPhotoViewer = document.querySelector("#member-photo-viewer");
 const memberPhotoViewerImage = document.querySelector("#member-photo-viewer-image");
@@ -740,22 +741,19 @@ function renderPublicMemberRows(data = members) {
 }
 
 const publicMemberListToggle = document.querySelector("#public-member-list-toggle");
-const publicRegisterSection = publicMemberListToggle.closest(".public-register");
-let publicMemberListExpanded = false;
-
-function updatePublicMemberListVisibility() {
-  const searchActive = publicMemberSearch.value.trim().length > 0;
-  const visible = publicMemberListExpanded || searchActive;
-  publicRegisterSection.classList.toggle("show-member-list", visible);
-  publicMemberListToggle.setAttribute("aria-expanded", String(visible));
-  publicMemberListToggle.textContent = publicMemberListExpanded
-    ? "Hide Members"
-    : "View All Members";
-}
-
 publicMemberListToggle.addEventListener("click", () => {
-  publicMemberListExpanded = !publicMemberListExpanded;
-  updatePublicMemberListVisibility();
+  publicMemberDialog.showModal();
+  publicMemberListToggle.setAttribute("aria-expanded", "true");
+  publicMemberSearch.focus();
+});
+document.querySelector("#public-member-dialog-close").addEventListener("click", () => {
+  publicMemberDialog.close();
+});
+publicMemberDialog.addEventListener("close", () => {
+  publicMemberListToggle.setAttribute("aria-expanded", "false");
+});
+publicMemberDialog.addEventListener("click", (event) => {
+  if (event.target === publicMemberDialog) publicMemberDialog.close();
 });
 
 function renderPublicRegister(data = members, year = eventYear, title = eventTitle) {
@@ -826,9 +824,6 @@ function renderAccounts() {
   });
   document.querySelector("#public-expense-rows").replaceChildren(fragment);
   document.querySelector("#public-expense-empty").hidden = selectedExpenses.length > 0;
-  document.querySelector("#accounts-section .section-description").textContent = hasRegisterCollection
-    ? `Balance includes the ${year - 1} carry-forward, member receipts, and recorded expenditures.`
-    : `Member collections are available for the current ${eventYear} register only.`;
   if (!supportsSharedFinance) {
     accountsStatus.textContent = "Shared Hisab data needs the latest Supabase setup. Run supabase-setup.sql to enable this section.";
     accountsStatus.classList.add("is-error");
@@ -1330,7 +1325,6 @@ editorRows.addEventListener("click", (event) => {
 memberSearch.addEventListener("input", renderEditor);
 publicMemberSearch.addEventListener("input", () => {
   renderPublicMemberRows();
-  updatePublicMemberListVisibility();
 });
 
 addMemberButton.addEventListener("click", () => {

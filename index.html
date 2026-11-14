@@ -66,7 +66,6 @@ Celebrating the beauty of Chhath in Karkatta.</p>
             <span class="section-kicker">OUR KARKATTA COMMUNITY</span>
             <h2 id="member-gallery-title">Meet our members</h2>
           </div>
-          <span class="section-aside">Swipe to explore members</span>
         </div>
         <div id="member-cards" class="member-cards" aria-label="Member photo cards" tabindex="0"></div>
       </section>
@@ -82,30 +81,16 @@ Celebrating the beauty of Chhath in Karkatta.</p>
           <div>
             <span class="section-kicker">COMMUNITY CONTRIBUTIONS</span>
             <h2 id="public-register-title">Chhath Puja members register 2026</h2>
-            <p class="section-description">A clear record of pledges, payments, and community support.</p>
           </div>
         </div>
         <p id="public-refresh-status" class="pdf-status" role="status" aria-live="polite">Loading the latest shared data…</p>
         <p id="public-pdf-status" class="pdf-status" role="status" aria-live="polite"></p>
-        <label class="search-box public-member-search">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.7" cy="8.7" r="5.7"/><path d="m13 13 4 4"/></svg>
-          <input id="public-member-search" type="search" placeholder="Search member name" aria-label="Search members by name" autocomplete="off">
-        </label>
-        <button id="public-member-list-toggle" class="button button-outline public-member-list-toggle" type="button" aria-controls="public-member-rows" aria-expanded="false">View All Members</button>
+        <button id="public-member-list-toggle" class="button button-outline public-member-list-toggle" type="button" aria-haspopup="dialog" aria-controls="public-member-dialog" aria-expanded="false">View All Members</button>
         <div class="register-summary" aria-label="Contribution totals">
           <article class="summary-card"><span>Members</span><strong id="public-member-total">52</strong><small>in the register</small></article>
           <article class="summary-card"><span>Total pledged</span><strong id="public-pledged-total">₹9,107</strong><small>as recorded</small></article>
           <article class="summary-card summary-card-accent"><span>Received</span><strong id="public-received-total">₹3,407</strong><small>contributions collected</small></article>
           <article class="summary-card"><span id="public-carry-forward-label">Last Year Carry Forward</span><strong id="public-carry-forward-amount">₹2,000</strong><small id="public-carry-forward-note">included in Hisab balance</small></article>
-        </div>
-        <div class="table-scroll public-table-scroll">
-          <table class="member-table public-member-table">
-            <thead>
-              <tr><th scope="col" class="number-column">No.</th><th scope="col">Member</th><th scope="col" class="amount-column">Pledged (₹)</th><th scope="col" class="paid-column">Paid</th><th scope="col" class="amount-column">Received (₹)</th></tr>
-            </thead>
-            <tbody id="public-member-rows"></tbody>
-            <tfoot><tr><th scope="row" colspan="2">Total</th><td id="public-table-pledged">₹9,107</td><td></td><td id="public-table-received">₹3,407</td></tr></tfoot>
-          </table>
         </div>
         <p class="register-footnote">The previous year's balance is shown separately.</p>
         <div class="pdf-actions">
@@ -115,12 +100,31 @@ Celebrating the beauty of Chhath in Karkatta.</p>
         </div>
       </section>
 
+      <dialog id="public-member-dialog" class="public-member-dialog" aria-labelledby="public-member-dialog-title">
+        <div class="public-member-dialog-heading">
+          <h2 id="public-member-dialog-title">All Members</h2>
+          <button id="public-member-dialog-close" class="button button-outline" type="button">Close</button>
+        </div>
+        <label class="search-box public-member-search">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.7" cy="8.7" r="5.7"/><path d="m13 13 4 4"/></svg>
+          <input id="public-member-search" type="search" placeholder="Search member name" aria-label="Search members by name" autocomplete="off">
+        </label>
+        <div class="table-scroll public-table-scroll">
+          <table class="member-table public-member-table">
+            <thead>
+              <tr><th scope="col" class="number-column">No.</th><th scope="col">Member</th><th scope="col" class="amount-column">Pledged (₹)</th><th scope="col" class="paid-column">Paid</th><th scope="col" class="amount-column">Received (₹)</th></tr>
+            </thead>
+            <tbody id="public-member-rows"></tbody>
+            <tfoot><tr><th scope="row" colspan="2">Total</th><td id="public-table-pledged">₹9,107</td><td></td><td id="public-table-received">₹3,407</td></tr></tfoot>
+          </table>
+        </div>
+      </dialog>
+
       <section id="accounts-section" class="content-section accounts-section" aria-labelledby="accounts-title">
         <div class="section-heading accounts-heading">
           <div>
             <span class="section-kicker">HISAB</span>
             <h2 id="accounts-title">Collection &amp; expenditure <span id="accounts-year">2026</span></h2>
-            <p class="section-description">Totals reflect contributions marked as received in the member register.</p>
           </div>
           <div class="accounts-controls">
             <label class="accounts-year-control">Year
@@ -169,14 +173,14 @@ Celebrating the beauty of Chhath in Karkatta.</p>
         <div id="gallery-cards" class="gallery-cards" aria-live="polite">
           <article class="gallery-card gallery-photo-card">
             <img src="assets/chhath-sample-photo.svg" alt="Illustrated Chhath offerings by the river at sunset">
-            <div class="gallery-card-copy"><span class="gallery-tag">COMMUNITY PHOTO</span><h3>Evening Arghya</h3><p>A Chhath celebration by the river in Karkatta.</p></div>
+            <div class="gallery-card-copy"><span class="gallery-tag">COMMUNITY PHOTO</span><h3>Evening Arghya</h3></div>
           </article>
           <article class="gallery-card gallery-video-card">
             <video controls preload="metadata" poster="assets/chhath-sample-video-poster.svg" aria-label="Chhath celebration video showing sunset by the river">
               <source src="assets/chhath-sample-video.mp4" type="video/mp4">
               Your browser does not support video playback.
             </video>
-            <div class="gallery-card-copy"><span class="gallery-tag">COMMUNITY VIDEO</span><h3>Sunset by the river</h3><p>Community moments from Chhath celebrations in Karkatta.</p></div>
+            <div class="gallery-card-copy"><span class="gallery-tag">COMMUNITY VIDEO</span><h3>Sunset by the river</h3></div>
           </article>
         </div>
         <div id="media-grid" class="media-grid" aria-live="polite"></div>
